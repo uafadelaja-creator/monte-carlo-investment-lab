@@ -1,0 +1,245 @@
+{
+  "research_only": true,
+  "hypothesis_predeclared": true,
+  "pair": [
+    "KO",
+    "PEP"
+  ],
+  "market_data": "data/stat_arb_local/adjusted_close.csv",
+  "download_manifest": {
+    "provider": "Yahoo Finance through yfinance (unofficial; exploratory research only)",
+    "source_url": "https://ranaroussi.github.io/yfinance/",
+    "downloaded_utc": "2026-10-18T23:51:59.894790+00:00",
+    "requested_start": "2015-01-01",
+    "requested_end_exclusive": "2026-10-17",
+    "tickers": [
+      "V",
+      "MA",
+      "KO",
+      "PEP",
+      "XOM",
+      "CVX",
+      "SPY",
+      "XLF",
+      "XLP",
+      "XLE"
+    ],
+    "model_input": "adjusted_close.csv",
+    "price_basis": "Adjusted Close approximates total return after vendor corporate-action adjustments; it is not a historical executable fill price. raw_close.csv is audit context only.",
+    "rows": 2965,
+    "earliest_date": "2015-01-02",
+    "latest_date": "2026-10-16",
+    "missing_per_ticker": {
+      "V": 0,
+      "MA": 0,
+      "KO": 0,
+      "PEP": 0,
+      "XOM": 0,
+      "CVX": 0,
+      "SPY": 0,
+      "XLF": 0,
+      "XLP": 0,
+      "XLE": 0
+    },
+    "file_sha256": {
+      "adjusted_close.csv": "ed5acb302f4cc26d29e7168c222c3d03e305d6f691b48c9ad71b89b29d59b406",
+      "raw_close.csv": "807db1d9415a9a55cd7f68a32a41dc58653921c2d7226a3fab1759bbbb9a5dd4"
+    },
+    "warnings": [],
+    "limitations": [
+      "modern ticker list creates survivorship and point-in-time membership bias",
+      "vendor data can be revised and may omit delistings or corrections",
+      "adjusted prices are total-return approximations, not executable quotes",
+      "raw closes do not by themselves model splits, dividends, spreads, or slippage",
+      "daily bars cannot establish next-open or intraday fill quality",
+      "redistribution rights must be checked; raw downloads are gitignored"
+    ]
+  },
+  "test_start": "2023-01-03",
+  "last_test_session": "2026-10-16",
+  "settings": {
+    "formation_days": 252,
+    "z_lookback": 60,
+    "refit_every_days": 21,
+    "entry_z": 2.0,
+    "exit_z": 0.5,
+    "stop_z": 3.5,
+    "cointegration_max_p": 0.05,
+    "turnover_cost_bps_per_notional_dollar": 10.0,
+    "hypothetical_short_borrow_apr": 0.03,
+    "execution": "signal after close T; modeled fill at close T+1; P&L begins T+1 to T+2",
+    "price_basis": "vendor-adjusted close; total-return approximation, not executable quote"
+  },
+  "strategy_net": {
+    "n_sessions": 951,
+    "cumulative_return": 0.0,
+    "cagr": 0.0,
+    "annualized_volatility": 0.0,
+    "max_drawdown": 0.0,
+    "sharpe_rf_0": null,
+    "sortino_rf_0": null,
+    "profitable_day_fraction": 0.0
+  },
+  "flat_cash": {
+    "cumulative_return": 0.0,
+    "volatility": 0.0,
+    "note": "Nominal zero-yield cash; interest and inflation omitted."
+  },
+  "benchmarks": {
+    "SPY": {
+      "n_sessions": 951,
+      "cumulative_return": 1.0924284657622203,
+      "cagr": 0.21609459047359603,
+      "annualized_volatility": 0.1487441803519299,
+      "max_drawdown": -0.1875524241069635,
+      "sharpe_rf_0": 1.389750687948979,
+      "sortino_rf_0": 1.9191460775156195,
+      "profitable_day_fraction": 0.5594111461619348
+    },
+    "XLP": {
+      "n_sessions": 951,
+      "cumulative_return": 0.2988226653793409,
+      "cagr": 0.0717387207122755,
+      "annualized_volatility": 0.12646586932599102,
+      "max_drawdown": -0.1336549251893382,
+      "sharpe_rf_0": 0.6110647115463718,
+      "sortino_rf_0": 0.9794941193296224,
+      "profitable_day_fraction": 0.5110410094637224
+    }
+  },
+  "risk_adjusted_comparisons": {
+    "SPY": {
+      "information_ratio_rf_0": -1.389750687948979,
+      "volatility_ratio_strategy_to_benchmark": 0.0,
+      "note": "Descriptive risk adjustment only; neither series is leverage-matched."
+    },
+    "XLP": {
+      "information_ratio_rf_0": -0.6110647115463719,
+      "volatility_ratio_strategy_to_benchmark": 0.0,
+      "note": "Descriptive risk adjustment only; neither series is leverage-matched."
+    }
+  },
+  "fama_french_attribution": {
+    "status": "not_estimable",
+    "reason": "strategy was flat throughout the aligned factor sample"
+  },
+  "executed_entry_count": 0,
+  "exposure_fraction": 0.0,
+  "total_turnover": 0.0,
+  "total_modeled_turnover_cost": 0.0,
+  "total_modeled_borrow_drag": 0.0,
+  "bootstrap": [
+    {
+      "horizon_months": 1,
+      "horizon_sessions": 21,
+      "paths": 50000,
+      "block_sessions": 20,
+      "seed": 20261039,
+      "mean_return": 0.0,
+      "p05_return": 0.0,
+      "p25_return": 0.0,
+      "median_return": 0.0,
+      "p75_return": 0.0,
+      "p95_return": 0.0,
+      "probability_profitable": 0.0,
+      "probability_loss": 0.0,
+      "median_max_drawdown": 0.0,
+      "p95_max_drawdown": 0.0
+    },
+    {
+      "horizon_months": 3,
+      "horizon_sessions": 63,
+      "paths": 50000,
+      "block_sessions": 20,
+      "seed": 20261081,
+      "mean_return": 0.0,
+      "p05_return": 0.0,
+      "p25_return": 0.0,
+      "median_return": 0.0,
+      "p75_return": 0.0,
+      "p95_return": 0.0,
+      "probability_profitable": 0.0,
+      "probability_loss": 0.0,
+      "median_max_drawdown": 0.0,
+      "p95_max_drawdown": 0.0
+    },
+    {
+      "horizon_months": 6,
+      "horizon_sessions": 126,
+      "paths": 50000,
+      "block_sessions": 20,
+      "seed": 20261144,
+      "mean_return": 0.0,
+      "p05_return": 0.0,
+      "p25_return": 0.0,
+      "median_return": 0.0,
+      "p75_return": 0.0,
+      "p95_return": 0.0,
+      "probability_profitable": 0.0,
+      "probability_loss": 0.0,
+      "median_max_drawdown": 0.0,
+      "p95_max_drawdown": 0.0
+    },
+    {
+      "horizon_months": 12,
+      "horizon_sessions": 252,
+      "paths": 50000,
+      "block_sessions": 20,
+      "seed": 20261270,
+      "mean_return": 0.0,
+      "p05_return": 0.0,
+      "p25_return": 0.0,
+      "median_return": 0.0,
+      "p75_return": 0.0,
+      "p95_return": 0.0,
+      "probability_profitable": 0.0,
+      "probability_loss": 0.0,
+      "median_max_drawdown": 0.0,
+      "p95_max_drawdown": 0.0
+    },
+    {
+      "horizon_months": 24,
+      "horizon_sessions": 504,
+      "paths": 50000,
+      "block_sessions": 20,
+      "seed": 20261522,
+      "mean_return": 0.0,
+      "p05_return": 0.0,
+      "p25_return": 0.0,
+      "median_return": 0.0,
+      "p75_return": 0.0,
+      "p95_return": 0.0,
+      "probability_profitable": 0.0,
+      "probability_loss": 0.0,
+      "median_max_drawdown": 0.0,
+      "p95_max_drawdown": 0.0
+    },
+    {
+      "horizon_months": 36,
+      "horizon_sessions": 756,
+      "paths": 50000,
+      "block_sessions": 20,
+      "seed": 20261774,
+      "mean_return": 0.0,
+      "p05_return": 0.0,
+      "p25_return": 0.0,
+      "median_return": 0.0,
+      "p75_return": 0.0,
+      "p95_return": 0.0,
+      "probability_profitable": 0.0,
+      "probability_loss": 0.0,
+      "median_max_drawdown": 0.0,
+      "p95_max_drawdown": 0.0
+    }
+  ],
+  "warnings": [
+    "Not a live recommendation or trade alert.",
+    "Present-day survivor-selected pairs are fixed hypotheses, not a historical universe.",
+    "Adjusted closes are total-return approximations and not executable fills.",
+    "Flat turnover cost and borrow APR are scenarios, not observed bid/ask or locate data.",
+    "Borrow availability, margin calls, taxes, market impact, and intraday gaps are omitted.",
+    "Rolling cointegration tests do not prove persistent mean reversion.",
+    "No model was selected by ranking these test-period results.",
+    "Block bootstrap is conditional on this observed test sample and cannot create unseen regimes."
+  ]
+}

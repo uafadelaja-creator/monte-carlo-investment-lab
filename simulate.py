@@ -1,8 +1,9 @@
-"""Reproducible, assumption-based Monte Carlo investment comparison.
+"""Reproducible multi-asset Monte Carlo investment lab.
 
-This is a scenario engine, NOT a historical estimate or a stock recommendation.
-Run: python simulate.py --paths 50000 --seed 20260926
+Models three ETF sleeves with correlated, heavy-tailed monthly log returns and
+explicit month-end contributions. This is scenario analysis, not a forecast.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -10,157 +11,268 @@ import csv
 import json
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-NAMES = ("Speculative technology", "Established companies", "Diversified index")
-ANNUAL_MEAN = np.array([0.14, 0.10, 0.08])  # illustrative arithmetic expected returns
-ANNUAL_VOL = np.array([0.50, 0.25, 0.18])
-CORRELATION = np.array([[1.0, 0.70, 0.55], [0.70, 1.0, 0.80], [0.55, 0.80, 1.0]])
-HORIZONS = (1, 3, 5, 10)
-MONTHS_PER_YEAR = 12
+
+NAMES = ["ARKK proxy", "QUAL proxy", "SPY proxy"]
+TICKERS = ["ARKK", "QUAL", "SPY"]
+ANNUAL_RETURN_ANCHOR = np.array([0.1363, 0.1447, 0.1522])
+MU = np.log1p(ANNUAL_RETURN_ANCHOR)
+VOL = np.array([0.50, 0.1228, 0.1274])
+CORR = np.array([[1.00, 0.62, 0.58], [0.62, 1.00, 0.92], [0.58, 0.92, 1.00]])
+STRESS_CORR = np.array([[1.00, 0.85, 0.80], [0.85, 1.00, 0.97], [0.80, 0.97, 1.00]])
+HORIZONS = (1, 3, 6, 12, 24, 36)
 START = 500.0
-WEEKLY_CONTRIBUTION = 100.0
-MONTHLY_CONTRIBUTION = WEEKLY_CONTRIBUTION * 52 / 12
+WEEKLY = 100.0
+MONTHLY_EQ = WEEKLY * 52.0 / 12.0
+AS_OF = "2026-10-02"
+VERSION = "0.3"
+MARKET_SNAPSHOT = {"ARKK": 89.83, "QUAL": 224.48, "SPY": 769.64}
 
 
-def simulate(paths: int, seed: int, years: int = 10,
-             annual_mean: np.ndarray = ANNUAL_MEAN,
-             annual_vol: np.ndarray = ANNUAL_VOL):
-    if paths < 1 or years < 1:
-        raise ValueError("paths and years must be positive")
+def run(
+    paths: int,
+    seed: int,
+    *,
+    annual_mean: np.ndarray = MU,
+    annual_vol: np.ndarray = VOL,
+    corr: np.ndarray = CORR,
+    weekly: float = WEEKLY,
+    months: int = 36,
+) -> dict[str, np.ndarray]:
+    """Simulate correlated Student-t monthly log returns and cash flows."""
     rng = np.random.default_rng(seed)
-    chol = np.linalg.cholesky(CORRELATION)
-    wealth = np.full((paths, 3), START)
-    # Unitized NAV tracks investment drawdown without deposits masking losses.
-    nav = np.ones((paths, 3))
-    peak = nav.copy()
-    max_dd = np.zeros((paths, 3))
-    outcome = {}
-    monthly = []
-    drift = np.log1p(annual_mean) / 12 - 0.5 * annual_vol**2 / 12
-    scale = annual_vol / np.sqrt(12)
-    for month in range(1, years * 12 + 1):
-        z = rng.standard_normal((paths, 3)) @ chol.T
-        gross = np.exp(drift + z * scale)
-        wealth *= gross
-        wealth += MONTHLY_CONTRIBUTION  # deposit at end of each month
-        nav *= gross
-        peak = np.maximum(peak, nav)
-        max_dd = np.maximum(max_dd, 1 - nav / peak)
-        q = np.percentile(wealth, [5, 50, 95], axis=0)
-        monthly.append((month, q))
-        if month % 12 == 0 and month // 12 in HORIZONS:
-            outcome[month // 12] = (wealth.copy(), max_dd.copy())
-    return outcome, monthly
+    df = 5
+    monthly_mean = annual_mean / 12.0
+    monthly_vol = annual_vol / np.sqrt(12.0)
+    cov = np.outer(monthly_vol, monthly_vol) * corr
+    chol = np.linalg.cholesky(cov)
+    nav = np.full((paths, len(NAMES)), START)
+    wealth = np.empty((months, paths, len(NAMES)), dtype=np.float64)
+    unit_nav = np.ones_like(nav)
+    unit_wealth = np.empty_like(wealth)
+    unit_peak = unit_nav.copy()
+    max_drawdown = np.zeros_like(nav)
+    drawdown_history = np.empty_like(wealth)
+    contribution = weekly * 52.0 / 12.0
+
+    for month in range(months):
+        z = rng.standard_normal((paths, len(NAMES))) @ chol.T
+        scale = np.sqrt(df / rng.chisquare(df, paths))[:, None]
+        log_return = monthly_mean + z * scale / np.sqrt(df / (df - 2))
+        gross_return = np.exp(log_return)
+        nav *= gross_return
+        nav += contribution
+        unit_nav *= gross_return
+        unit_peak = np.maximum(unit_peak, unit_nav)
+        max_drawdown = np.minimum(max_drawdown, unit_nav / unit_peak - 1.0)
+        wealth[month] = nav
+        unit_wealth[month] = unit_nav
+        drawdown_history[month] = max_drawdown
+
+    return {
+        "wealth": wealth,
+        "unit_wealth": unit_wealth,
+        "max_drawdown": drawdown_history,
+    }
 
 
-def summarize(outcome):
-    rows = []
-    for year in HORIZONS:
-        wealth, drawdown = outcome[year]
-        total_deposits = START + 52 * WEEKLY_CONTRIBUTION * year
-        for i, name in enumerate(NAMES):
-            w = wealth[:, i]
-            rows.append({
-                "years": year, "portfolio": name,
-                "total_contributions": total_deposits,
-                "mean_ending_wealth": np.mean(w),
-                "p05_ending_wealth": np.percentile(w, 5),
-                "p25_ending_wealth": np.percentile(w, 25),
-                "median_ending_wealth": np.median(w),
-                "p75_ending_wealth": np.percentile(w, 75),
-                "p95_ending_wealth": np.percentile(w, 95),
-                "p_below_contributions": np.mean(w < total_deposits),
-                "p_beat_index": np.mean(w > wealth[:, 2]) if i != 2 else np.nan,
-                "median_max_drawdown": np.median(drawdown[:, i]),
-                "p_drawdown_over_50pct": np.mean(drawdown[:, i] > .50),
-            })
+def summarize(
+    out: dict[str, np.ndarray], weekly: float, volatility: np.ndarray = VOL
+) -> list[dict[str, float | int | str]]:
+    rows: list[dict[str, float | int | str]] = []
+    for months in HORIZONS:
+        contributed = START + weekly * 52.0 / 12.0 * months
+        nav = out["wealth"][months - 1]
+        for idx, name in enumerate(NAMES):
+            values = nav[:, idx]
+            unit_values = out["unit_wealth"][months - 1, :, idx]
+            percentile = np.percentile(values, [5, 25, 50, 75, 95])
+            drawdown = -out["max_drawdown"][months - 1, :, idx]
+            gain = values / contributed - 1.0
+            rows.append(
+                {
+                    "portfolio": name,
+                    "months": months,
+                    "contributed": contributed,
+                    "mean_ending_value": values.mean(),
+                    "median_ending_value": percentile[2],
+                    "p5": percentile[0],
+                    "p25": percentile[1],
+                    "p75": percentile[3],
+                    "p95": percentile[4],
+                    "prob_profitable": np.mean(values > contributed),
+                    "prob_loss": np.mean(values < contributed),
+                    "mean_contribution_adjusted_return": gain.mean(),
+                    "median_time_weighted_cagr": np.nan
+                    if months < 12
+                    else np.median(unit_values ** (12.0 / months) - 1.0),
+                    "median_max_drawdown": np.median(drawdown),
+                    "p95_max_drawdown": np.percentile(drawdown, 95),
+                    "annual_volatility_input": volatility[idx],
+                    "prob_beat_spy": np.nan if idx == 2 else np.mean(values > nav[:, 2]),
+                }
+            )
     return rows
 
 
-def write_outputs(outdir: Path, rows, monthly, paths: int, seed: int):
-    outdir.mkdir(parents=True, exist_ok=True)
-    with (outdir / "baseline_summary.csv").open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0]))
-        writer.writeheader()
-        writer.writerows(rows)
-    assumptions = {
-        "status": "ILLUSTRATIVE ASSUMPTIONS, NOT HISTORICALLY CALIBRATED",
-        "paths": paths, "seed": seed, "monthly_steps": 120,
-        "start_usd": START, "weekly_contribution_usd": WEEKLY_CONTRIBUTION,
-        "deposit_model": "52/12 times the weekly amount, deposited at each month end",
-        "portfolios": list(NAMES), "annual_arithmetic_mean_assumptions": ANNUAL_MEAN.tolist(),
-        "annual_volatility_assumptions": ANNUAL_VOL.tolist(),
-        "correlations": CORRELATION.tolist(),
-        "return_model": "joint correlated lognormal, constant parameters, no bankruptcy jumps",
-        "excluded": ["inflation", "taxes", "fees", "trading costs", "survivorship", "regime shifts"],
-    }
-    (outdir / "assumptions.json").write_text(json.dumps(assumptions, indent=2) + "\n")
-    months = np.array([m for m, _ in monthly])
-    q = np.stack([x for _, x in monthly])
-    fig, axs = plt.subplots(1, 3, figsize=(13, 4), sharey=True)
-    colors = ("#7041a6", "#167b8e", "#555e6b")
-    for i, (ax, name) in enumerate(zip(axs, NAMES)):
-        ax.fill_between(months / 12, q[:, 0, i], q[:, 2, i], color=colors[i], alpha=.16, label="5th–95th")
-        ax.plot(months / 12, q[:, 1, i], color=colors[i], lw=2, label="Median")
-        ax.plot(months / 12, START + MONTHLY_CONTRIBUTION * months,
-                color="black", linestyle="--", lw=1, label="Contributed")
-        ax.set_title(name)
-        ax.set_xlabel("Years")
-        ax.grid(alpha=.2)
-    axs[0].set_ylabel("Portfolio value (USD)")
-    axs[-1].legend(fontsize=8)
-    fig.suptitle("Illustrative scenarios only · assumed returns, not forecasts", fontsize=12)
-    fig.tight_layout()
-    fig.savefig(outdir / "wealth_fan.png", dpi=170)
-    plt.close(fig)
-
-
-def write_sensitivity(outdir: Path, paths: int, seed: int):
-    """Show how assumed speculative mean and volatility change the conclusion."""
-    rows = []
-    for mean in (0.08, 0.14, 0.20):
-        for vol in (0.40, 0.50, 0.60):
-            means = ANNUAL_MEAN.copy()
-            vols = ANNUAL_VOL.copy()
-            means[0], vols[0] = mean, vol
-            outcomes, _ = simulate(paths, seed, annual_mean=means, annual_vol=vols)
-            wealth, _ = outcomes[10]
-            rows.append({
-                "assumed_spec_annual_mean": mean,
-                "assumed_spec_annual_volatility": vol,
-                "spec_10y_median_usd": np.median(wealth[:, 0]),
-                "index_10y_median_usd": np.median(wealth[:, 2]),
-                "spec_10y_p_below_deposits": np.mean(wealth[:, 0] < START + 520 * WEEKLY_CONTRIBUTION),
-                "spec_10y_p_beat_paired_index": np.mean(wealth[:, 0] > wealth[:, 2]),
-            })
-    with (outdir / "sensitivity.csv").open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+def write_rows(path: Path, rows: list[dict[str, object]]) -> None:
+    with path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--paths", type=int, default=50000)
-    parser.add_argument("--seed", type=int, default=20260926)
-    parser.add_argument("--outdir", type=Path, default=Path("results"))
-    parser.add_argument("--sensitivity", action="store_true", help="run nine speculative assumption variants")
-    args = parser.parse_args()
-    outcome, monthly = simulate(args.paths, args.seed)
-    rows = summarize(outcome)
-    write_outputs(args.outdir, rows, monthly, args.paths, args.seed)
-    if args.sensitivity:
-        write_sensitivity(args.outdir, args.paths, args.seed)
+def horizon36(
+    rows: list[dict[str, object]], label: str, weekly: float
+) -> list[dict[str, object]]:
+    compact = []
     for row in rows:
-        print(f"{row['years']:2d}y {row['portfolio']:<23} "
-              f"median=${row['median_ending_wealth']:,.0f} "
-              f"p05=${row['p05_ending_wealth']:,.0f} "
-              f"p95=${row['p95_ending_wealth']:,.0f} "
-              f"Pr(loss)={row['p_below_contributions']:.1%}")
+        if row["months"] != 36:
+            continue
+        compact.append(
+            {
+                "scenario": label,
+                "portfolio": row["portfolio"],
+                "weekly_contribution": weekly,
+                "contributed": row["contributed"],
+                "median_ending_value": row["median_ending_value"],
+                "mean_ending_value": row["mean_ending_value"],
+                "p5": row["p5"],
+                "p95": row["p95"],
+                "prob_profitable": row["prob_profitable"],
+                "prob_loss": row["prob_loss"],
+                "mean_contribution_adjusted_return": row[
+                    "mean_contribution_adjusted_return"
+                ],
+                "median_time_weighted_cagr": row["median_time_weighted_cagr"],
+                "median_max_drawdown": row["median_max_drawdown"],
+                "p95_max_drawdown": row["p95_max_drawdown"],
+                "prob_beat_spy": row["prob_beat_spy"],
+            }
+        )
+    return compact
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--paths", type=int, default=50_000)
+    parser.add_argument("--seed", type=int, default=20_261_004)
+    parser.add_argument("--outdir", type=Path, default=Path("results"))
+    args = parser.parse_args()
+    args.outdir.mkdir(parents=True, exist_ok=True)
+
+    baseline = run(args.paths, args.seed)
+    baseline_rows = summarize(baseline, WEEKLY)
+    write_rows(args.outdir / "baseline_summary.csv", baseline_rows)
+
+    lower_return_anchor = np.maximum(ANNUAL_RETURN_ANCHOR - 0.05, -0.99)
+    lower_mean = np.log1p(lower_return_anchor)
+    risk_scenarios = [
+        ("Historical-anchor baseline", MU, VOL, CORR),
+        ("Return reversion (-5pp annual)", lower_mean, VOL, CORR),
+        (
+            "Stress (-5pp return, 1.5x vol, tighter corr)",
+            lower_mean,
+            VOL * 1.5,
+            STRESS_CORR,
+        ),
+    ]
+    scenario_rows: list[dict[str, object]] = []
+    for label, mean, vol, corr in risk_scenarios:
+        out = run(
+            args.paths,
+            args.seed,
+            annual_mean=mean,
+            annual_vol=vol,
+            corr=corr,
+        )
+        scenario_rows.extend(
+            horizon36(summarize(out, WEEKLY, vol), label, WEEKLY)
+        )
+    write_rows(args.outdir / "scenario_summary.csv", scenario_rows)
+
+    contribution_rows: list[dict[str, object]] = []
+    for weekly in (0.0, 50.0, 100.0, 200.0):
+        out = run(args.paths, args.seed, weekly=weekly)
+        contribution_rows.extend(
+            horizon36(
+                summarize(out, weekly),
+                "Historical-anchor baseline",
+                weekly,
+            )
+        )
+    write_rows(args.outdir / "contribution_sensitivity.csv", contribution_rows)
+
+    assumptions = {
+        "version": VERSION,
+        "as_of": AS_OF,
+        "paths": args.paths,
+        "master_seed": args.seed,
+        "seed_policy": (
+            "Fixed master seed; identical random draws across scenarios "
+            "for paired comparisons."
+        ),
+        "assets": TICKERS,
+        "current_close_snapshot": MARKET_SNAPSHOT,
+        "historical_annualized_total_return_anchors": dict(
+            zip(TICKERS, ANNUAL_RETURN_ANCHOR.tolist())
+        ),
+        "annual_log_return_drifts": dict(zip(TICKERS, MU.tolist())),
+        "annual_volatility": dict(zip(TICKERS, VOL.tolist())),
+        "correlation_matrix": CORR.tolist(),
+        "return_distribution": "Multivariate Student-t log returns, df=5",
+        "initial_investment": START,
+        "weekly_contribution": WEEKLY,
+        "monthly_equivalent_contribution": MONTHLY_EQ,
+        "contribution_timing": "month-end",
+        "drawdown_method": "Unitized time-weighted wealth path; contributions do not reduce drawdown.",
+        "cagr_method": "Median CAGR of unitized time-weighted wealth; shown for horizons of at least 12 months.",
+        "horizons_months": list(HORIZONS),
+        "risk_scenarios": [label for label, _, _, _ in risk_scenarios],
+        "contribution_scenarios_weekly": [0.0, 50.0, 100.0, 200.0],
+        "limitations": [
+            "Historical ETF returns may not persist and regime changes are not predictable.",
+            "Student-t tails improve on a Gaussian model but cannot reproduce every crash or liquidity event.",
+            "Correlations are unstable and may converge toward one in crises.",
+            "ARKK's shorter inception history and active management create selection and regime sensitivity.",
+            "ETF history contains survivorship and product-design bias; taxes, fees, spreads, and inflation are omitted.",
+            "Contribution-adjusted return is ending value divided by cash contributed minus one; it is not money-weighted IRR.",
+        ],
+    }
+    (args.outdir / "assumptions.json").write_text(
+        json.dumps(assumptions, indent=2) + "\n"
+    )
+
+    months = np.arange(1, 37)
+    median = np.median(baseline["wealth"], axis=1)
+    p5 = np.percentile(baseline["wealth"], 5, axis=1)
+    p95 = np.percentile(baseline["wealth"], 95, axis=1)
+    fig, axes = plt.subplots(1, 3, figsize=(13, 4), sharey=True)
+    for idx, ax in enumerate(axes):
+        ax.fill_between(
+            months,
+            p5[:, idx],
+            p95[:, idx],
+            alpha=0.22,
+            label="5th-95th",
+        )
+        ax.plot(months, median[:, idx], linewidth=2, label="Median")
+        ax.plot(
+            months,
+            START + MONTHLY_EQ * months,
+            linestyle="--",
+            label="Contributed",
+        )
+        ax.set_title(NAMES[idx])
+        ax.set_xlabel("Months")
+        ax.grid(alpha=0.25)
+    axes[0].set_ylabel("Ending value ($)")
+    axes[-1].legend(loc="upper left", fontsize=8)
+    fig.suptitle("Monte Carlo wealth paths: median and 90% interval")
+    fig.tight_layout()
+    fig.savefig(args.outdir / "wealth_fan.png", dpi=180)
 
 
 if __name__ == "__main__":

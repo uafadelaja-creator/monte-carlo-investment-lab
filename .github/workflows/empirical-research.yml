@@ -1,0 +1,66 @@
+name: Empirical research validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/empirical-stat-arb-20261013
+    paths:
+      - "download_prices.py"
+      - "pairs_research.py"
+      - "run_stat_arb_research.py"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/empirical-research.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Download exploratory market data
+        run: python download_prices.py --start 2015-01-01 --end 2026-10-17
+
+      - name: Download official Kenneth French factors
+        run: python download_french_factors.py
+
+      - name: Run predeclared pair protocol
+        run: >
+          python run_stat_arb_research.py
+          --test-start 2023-01-03
+          --paths 50000
+          --block 20
+          --seed 20261018
+
+      - name: Upload aggregate research outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: stat-arb-aggregate-results
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            data/download_manifest.json
+            data/french_factors_manifest.json
+            results/stat_arb/*_report.json
+            results/stat_arb/*_bootstrap.csv
+            results/stat_arb/*_research.png
+            results/stat_arb/predeclared_pair_summary.csv
+            results/stat_arb/cost_window_sensitivity.csv
+            results/stat_arb/STAT_ARB_RESULTS.md
+
