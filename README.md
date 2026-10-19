@@ -1,44 +1,207 @@
-# Speculative technology versus proven investing: Monte Carlo lab
+# Monte Carlo Investment Lab
 
-**Research question:** Across 1, 3, 5, and 10 years, does the upside from speculative emerging technologies sufficiently compensate for greater downside and volatility relative to established companies and a diversified index strategy?
+A reproducible investment-risk research project comparing a speculative-technology proxy (**ARKK**), a quality-equity proxy (**QUAL**), and the S&P 500 benchmark (**SPY**).
 
-**Current status (v0.1):** A fully reproducible **assumption-based demonstration**, not an empirical study and not a forecast. It does not recommend any security or report that one class historically outperformed another. The annual means, volatility, and correlations were chosen to illustrate how the comparison works; they were **not estimated from historical data**. The three arms are stylized portfolio-level return streams, not actual five-stock baskets. Read `results/assumptions.json` before interpreting numbers.
+**Live project:** https://uafadelaja-creator.github.io/monte-carlo-investment-lab/
 
-## Run
+## Current research release: v0.5 · 18 October 2026
+
+The repository now keeps three layers deliberately separate:
+
+1. **Illustrative assumptions:** `simulate.py` uses declared Student-t return,
+   volatility, and correlation assumptions. It is not historical evidence.
+2. **Empirical ETF-proxy risk:** `historical_analysis.py` resamples joint observed
+   ARKK/QUAL/SPY monthly returns. It is still conditional on a short, biased sample.
+3. **Statistical-arbitrage prototype:** `pairs_research.py` tests three predeclared
+   same-industry pair hypotheses with delayed fills, modeled costs, and a holdout.
+   It is not a signal service and has not established profitable alpha.
+
+Version 0.5 adds the third layer's reproducible research harness:
+
+- Fixed hypotheses: V/MA, KO/PEP, and XOM/CVX; no winner is selected ex post.
+- A 2023-01-03 holdout start with 252-day trailing formation, monthly refits,
+  Engle-Granger filtering, next-session-close modeled fills, 10 bps turnover cost,
+  and 3% hypothetical annual borrow drag.
+- Broad SPY plus XLF/XLP/XLE sector comparisons, cost/window sensitivity, and
+  50,000-path moving-block uncertainty across 1/3/6/12/24/36 months.
+- Tests for execution delay, look-ahead isolation, cost deduction, and bootstrap
+  reproducibility; a GitHub Actions workflow downloads data at run time and does
+  not commit vendor price files.
+
+### First fixed holdout result
+
+The documented protocol was run on 2,965 adjusted daily observations through
+16 October 2026, with a 3 January 2023 holdout start. It produced only three
+entries across all pairs: V/MA netted −0.005%, KO/PEP stayed flat, and XOM/CVX
+netted −2.29%. Exposure ranged from 0% to 2.1% of sessions. The 36-month
+moving-block loss probability was 45.7% for V/MA and 80.1% for XOM/CVX; KO/PEP's
+0% loss frequency reflects no trades, not a successful strategy.
+
+Cost and formation-window sensitivity changed outcomes materially. Descriptive
+Fama-French alpha estimates were not statistically persuasive and are not proof
+of implementable alpha. The current result is therefore **no demonstrated
+statistical-arbitrage edge**. See `RUN_2026-10-18.md` and `STAT_ARB_GUIDE.md`.
+
+## Empirical ETF-proxy release: v0.4 · 11 October 2026
+
+Version 0.4 adds the project's first completed empirical extension:
+
+- 140 common complete monthly adjusted-return observations, February 2015–September 2026.
+- 50,000 joint moving-block-bootstrap paths at 1, 3, 6, 12, 24, and 36 months.
+- Empirical return distributions, volatility, Sharpe ratios, drawdowns, correlations, skewness, kurtosis, VaR, and CVaR.
+- Paired benchmark comparisons, a hypothetical one-month shock, and 1/3/6-month block-length sensitivity.
+- A SHA-256 input hash and archived aggregate outputs; the saved project package
+  retains its cache, while the public repository excludes vendor price tables.
+- Two GitHub-ready charts, browser-readable JSON, and a standalone historical-results page.
+
+The original Student-t parametric engine remains in `simulate.py` as a separate model-risk comparison. Historical resampling does not silently replace it.
+
+![Observed versus simulated ETF proxy drawdowns](results/historical_drawdown.svg)
+
+## Historical sample
+
+| Proxy | Role | Historical CAGR | Annualized volatility | Month-end maximum drawdown | Sharpe, assumed 0% risk-free rate |
+|---|---|---:|---:|---:|---:|
+| ARKK | Speculative technology | 14.55% | 36.42% | −77.08% | 0.55 |
+| QUAL | Quality equities | 13.35% | 15.11% | −27.78% | 0.91 |
+| SPY | S&P 500 benchmark | 14.06% | 14.93% | −23.93% | 0.96 |
+
+Observed monthly correlations were 0.69 ARKK–QUAL, 0.72 ARKK–SPY, and 0.98 QUAL–SPY. The unusually high QUAL–SPY correlation means the quality proxy supplied little diversification in this particular sample.
+
+The latest market snapshot recorded on 9 October 2026 was ARKK $89.62, QUAL $227.12, and SPY $778.57. The published simulation used only complete months through September 2026, avoiding a partial October return.
+
+## Baseline historical-bootstrap outcomes
+
+Each arm starts with $500 and receives the month-end equivalent of $100 per week. Each cell shows **median ending value [5th–95th percentile]; probability above contributed cash**.
+
+| Horizon | Contributed | ARKK | QUAL | SPY |
+|---|---:|---:|---:|---:|
+| 1 month | $933 | $937 [$865–$1,026]; 54.8% | $939 [$895–$974]; 65.9% | $941 [$899–$973]; 69.5% |
+| 3 months | $1,800 | $1,868 [$1,562–$2,212]; 61.3% | $1,840 [$1,701–$1,930]; 75.5% | $1,843 [$1,718–$1,924]; 77.0% |
+| 6 months | $3,100 | $3,254 [$2,515–$4,103]; 62.7% | $3,229 [$2,923–$3,449]; 75.9% | $3,234 [$2,931–$3,454]; 77.2% |
+| 12 months | $5,700 | $6,181 [$4,312–$8,675]; 65.4% | $6,129 [$5,322–$6,794]; 82.1% | $6,146 [$5,353–$6,815]; 83.5% |
+| 24 months | $10,900 | $12,742 [$7,734–$21,000]; 69.8% | $12,496 [$10,296–$14,653]; 88.4% | $12,574 [$10,405–$14,739]; 89.6% |
+| 36 months | $16,100 | $20,264 [$11,010–$38,127]; 73.2% | $19,715 [$15,591–$24,189]; 92.4% | $19,926 [$15,799–$24,409]; 93.5% |
+
+### Thirty-six-month detail
+
+| Proxy | Mean ending value | Mean return on contributed cash | Median TWR CAGR | Median / 95th-pctl max drawdown | P(beat SPY) |
+|---|---:|---:|---:|---:|---:|
+| ARKK | $21,885 | 35.9% | 14.2% | 37.7% / 66.2% | 53.2% |
+| QUAL | $19,786 | 22.9% | 13.6% | 14.4% / 27.8% | 37.7% |
+| SPY | $19,987 | 24.1% | 14.3% | 13.4% / 26.8% | — |
+
+ARKK's right tail creates a higher mean, but the central conclusion is about risk rather than superiority: its 53.2% paired frequency of beating SPY is too close to chance to establish an edge, while its historical maximum drawdown and simulated downside are materially worse.
+
+## Run the empirical model
+
+Re-run from a local copy of the original cached input, when available:
 
 ```bash
 python -m pip install -r requirements.txt
-python simulate.py --paths 50000 --seed 20260926 --sensitivity
+python historical_analysis.py \
+  --csv data/adjusted_prices_through_2026-09.csv \
+  --paths 50000 --block 3 --seed 20261011 --as-of 2026-10-11 \
+  --outdir results
 ```
 
-Outputs: `results/baseline_summary.csv`, `results/assumptions.json`, `results/wealth_fan.png`, and `results/sensitivity.csv`. The fixed seed reproduces the stochastic results on compatible NumPy versions. Sensitivity varies the speculative assumed annual mean (8%, 14%, 20%) and volatility (40%, 50%, 60%) while holding the other arms fixed.
+Refresh exploratory data through Yahoo Finance via yfinance. Provider revisions
+can make refreshed output differ from the archived results:
 
-## Predeclared comparison
+```bash
+python historical_analysis.py \
+  --paths 50000 --block 3 --seed 20261011 \
+  --cache-csv data/adjusted_prices_through_2026-09.csv \
+  --outdir results
+```
 
-| Arm | Intended empirical portfolio | Illustrative annual mean / volatility |
-| --- | --- | --- |
-| Speculative technology | Systematically selected emerging technology companies | 14% / 50% |
-| Established companies | Systematically selected mature, profitable businesses | 10% / 25% |
-| Diversified index | Broad US market total-return benchmark | 8% / 18% |
+The original input's SHA-256 is recorded in `results/historical_metadata.json`.
+Identical input, dependency versions, parameters, and seed reproduce the CSV
+outputs. The public repository does not redistribute the vendor price table.
 
-Each arm starts with $500; contributes the cash-flow equivalent of $100 weekly at each month end ($433.33/month); contributions are identical across arms. We simulate 50,000 paired paths with correlated monthly returns. The same market scenario affects all three arms through the stated correlation matrix. Wealth, probability of ending below cumulative deposits, probability of exceeding the matched index path, and maximum drawdown of a deposit-free unitized NAV are reported. The probability of ending below deposits is a **nominal cash loss measure**, not an inflation-adjusted return or an internal rate of return. Fan bands are pointwise wealth percentiles and need not describe one attainable path.
+Run the parametric Student-t comparison separately:
 
-## What the first run can establish
+```bash
+python simulate.py --paths 50000 --seed 20261004 --outdir results
+```
 
-The code demonstrates a fair contribution schedule, paired path comparison, and sensitivity of results to assumed return and risk. A larger expected return can coexist with a poor median or deep drawdowns. **The first run cannot establish whether speculative investing actually has a 14% expected return or beats the index in real life.** The lognormal model cannot capture delisting, bankruptcy, discontinuous crashes, changing correlations, or heavy tails. Its percentile and drawdown probabilities are conditional on its assumptions and likely understate some real-world tail risks. There is no fee, tax, or inflation adjustment.
+Run the unit tests:
 
-## Empirical phase: protocol before seeing results
+```bash
+python -m unittest discover -s tests -v
+```
 
-1. **Freeze universe and definitions.** US exchange-listed operating companies, selected using information publicly available at each historical formation date. Specify technology themes and classification thresholds in a dated protocol. Proposed starting classification: speculative if the business operates in a predefined emerging-technology theme and has no positive GAAP operating income in the past three reported fiscal years; established if it has at least five years of public trading history, three consecutive years of positive operating income and operating cash flow, and at least $1 billion of annual revenue. Resolve overlap and missing filings before calculating returns. These are draft criteria and will be frozen before empirical results are viewed.
-2. **Use point-in-time fundamentals.** SEC EDGAR company facts and filing timestamps can anchor profitability and revenue classification. Account for disclosure delay. Avoid selecting today's surviving winners and projecting them backward.
-3. **Build total-return histories with delisting events.** Obtain a source that includes dividends, splits, delistings, and security identifier history. An ordinary downloaded list of surviving tickers is insufficient. French's public research portfolios can serve as a broad market and industry cross-check, but cannot by themselves identify an emerging technology firm cohort.
-4. **Hold out later periods.** Set formation frequency, equal/value weighting, reconstitution, transaction costs, and date boundaries in advance. Use rolling out-of-sample evaluation. Block-bootstrap historical **joint** monthly returns for the empirical simulation, preserving cross-arm co-movement and some clustered volatility. Report sensitivity to block length, start date, classifications, and costs. Avoid presenting in-sample fits as predictive probabilities.
-5. **Compare matched paths and report uncertainty.** Use matched contributions and dates. Include median and tails, conditional loss and drawdowns, paired index-beating probability, and robustness checks. Interpret differences with confidence intervals or bootstrap uncertainty, not a single ranking.
+## Run the predeclared pairs protocol
 
-## Sources and cautions
+Yahoo Finance through yfinance is used only as an exploratory source. Downloaded
+prices are gitignored because adjusted closes are not executable quotes and
+third-party redistribution permissions must be respected.
 
-- [Kenneth French Data Library](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html): US market, factor, and research portfolio return series; revisions and construction details matter.
-- [SEC EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces): company facts and filings for later point-in-time classifications.
-- [SEC diversification guide](https://www.investor.gov/additional-resources/general-resources/publications-research/info-sheets/beginners-guide-asset): a handful of individual stocks does not offer the same diversification as a broad fund.
+```bash
+python download_prices.py --start 2015-01-01 --end 2026-10-17
+python download_french_factors.py
+python run_stat_arb_research.py \
+  --test-start 2023-01-03 \
+  --paths 50000 --block 20 --seed 20261018
+```
 
-The assumptions are scenario inputs, not historical facts. Do not use the demonstration probabilities to place trades.
+The pair module has no contribution schedule: it models a self-financing long/short
+return stream. The ETF portfolio modules separately preserve contribution accounting.
+
+## Methodology
+
+The historical engine resamples contiguous three-month blocks of **joint** ARKK/QUAL/SPY returns. This preserves observed same-month co-movement and short return sequences instead of treating assets or months as independent. Identical contribution dates are applied to all arms.
+
+- Profit means ending nominal value exceeds cumulative contributions.
+- Contribution-adjusted return is mean ending value divided by contributed cash minus one.
+- CAGR and maximum drawdown use a deposit-free unitized return index.
+- The primary block length is three months; one- and six-month variants test sequence sensitivity.
+- The labeled shock applies −25% ARKK, −15% QUAL, and −18% SPY in the first simulated month.
+- SPY comparisons are path-by-path using the same resampled market history.
+
+## Outputs
+
+- `historical_results.html`: standalone GitHub Pages-ready historical results.
+- `results/historical_drawdown.svg`: lightweight public drawdown comparison.
+- `results/historical_simulation_summary.csv`: every requested horizon and outcome statistic.
+- `results/historical_risk_metrics.csv`: empirical risk statistics.
+- `results/historical_correlations.csv`: empirical correlation matrix.
+- `results/historical_block_sensitivity.csv`: 1/3/6-month block robustness.
+- `results/historical_dashboard_data.json`: browser-readable integration data.
+- `results/historical_metadata.json`: source window, seed, hash, assumptions, and limitations.
+- `results/historical_metadata.json`: includes the original input hash and source window.
+- `RUN_2026-10-11.md`: latest concise research report.
+- `CHANGELOG.md`: version history and methodological upgrades.
+- `STAT_ARB_GUIDE.md`: frozen pair protocol, data caveats, and roadmap.
+- `download_prices.py`: local-only exploratory Yahoo/yfinance data fetch with hashes.
+- `download_french_factors.py`: official Kenneth French daily factor download and manifest.
+- `pairs_research.py`: delayed-fill, cost-aware single-pair walk-forward engine.
+- `run_stat_arb_research.py`: fixed three-pair runner and robustness tables.
+- `.github/workflows/empirical-research.yml`: repeatable tests and real-data run.
+- Earlier run reports remain preserved for auditability.
+
+## Data sources
+
+- [ARK Innovation ETF](https://www.ark-funds.com/funds/arkk)
+- [iShares MSCI USA Quality Factor ETF](https://www.ishares.com/us/products/256101/)
+- [State Street SPDR S&P 500 ETF Trust](https://www.ssga.com/us/en/intermediary/etfs/state-street-spdr-sp-500-etf-trust-spy)
+- Historical adjusted closes: Yahoo Finance through yfinance for exploratory research.
+
+Official fund pages define the products and provide fund-level performance context.
+The archived aggregate results use the hashed October 2026 research input; public
+code can refresh exploratory data but does not redistribute the vendor table.
+
+## Limitations
+
+This is ETF-proxy research, not a point-in-time test of individual-company cohorts. It contains survivorship, launch-date, product-design, and active-strategy bias. The 2015–2026 sample is regime-dependent. A moving-block bootstrap cannot create truly unseen regimes or guarantee that past return frequencies will recur. Correlations can change abruptly, especially in crises. Month-end data miss intramonth drawdowns, liquidity gaps, and path extremes. Vendor-adjusted prices can be revised. Taxes, spreads, fund fees, inflation, and exact weekly deposit timing are omitted.
+
+Monte Carlo output is conditional on its input sample and assumptions. It does not establish predictive certainty or an investing edge.
+
+## Résumé bullet
+
+> Built and published a Python investment-risk lab using 50,000 joint moving-block-bootstrap paths and 140 months of ARKK, QUAL, and SPY adjusted returns; modeled matched contribution schedules, empirical correlations, non-normal tails, drawdowns, benchmark-beating frequencies, stress tests, and reproducible multi-horizon wealth distributions.
+
+Current extension, accurately labeled as research in progress:
+
+> Developing a walk-forward statistical-arbitrage research harness for predeclared same-industry pairs with one-session execution delay, explicit turnover and borrow costs, broad/sector benchmarks, sensitivity tests, leakage checks, and moving-block uncertainty analysis.
+

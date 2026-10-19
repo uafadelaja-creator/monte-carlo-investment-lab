@@ -1,0 +1,14 @@
+.DS_Store
+# Third-party market data are local research inputs, not repository assets.
+data/adjusted_close.csv
+data/raw_close.csv
+data/download_manifest.json
+data/french_factors_daily.csv
+data/french_factors_manifest.json
+results/stat_arb/*_daily.csv
+results/stat_arb/
+
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/

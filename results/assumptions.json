@@ -1,0 +1,83 @@
+{
+  "version": "0.3",
+  "as_of": "2026-10-02",
+  "paths": 50000,
+  "master_seed": 20261004,
+  "seed_policy": "Fixed master seed; identical random draws across scenarios for paired comparisons.",
+  "assets": [
+    "ARKK",
+    "QUAL",
+    "SPY"
+  ],
+  "current_close_snapshot": {
+    "ARKK": 89.83,
+    "QUAL": 224.48,
+    "SPY": 769.64
+  },
+  "historical_annualized_total_return_anchors": {
+    "ARKK": 0.1363,
+    "QUAL": 0.1447,
+    "SPY": 0.1522
+  },
+  "annual_log_return_drifts": {
+    "ARKK": 0.12777736994182637,
+    "QUAL": 0.13514259394229358,
+    "SPY": 0.1416731583161457
+  },
+  "annual_volatility": {
+    "ARKK": 0.5,
+    "QUAL": 0.1228,
+    "SPY": 0.1274
+  },
+  "correlation_matrix": [
+    [
+      1.0,
+      0.62,
+      0.58
+    ],
+    [
+      0.62,
+      1.0,
+      0.92
+    ],
+    [
+      0.58,
+      0.92,
+      1.0
+    ]
+  ],
+  "return_distribution": "Multivariate Student-t log returns, df=5",
+  "initial_investment": 500.0,
+  "weekly_contribution": 100.0,
+  "monthly_equivalent_contribution": 433.3333333333333,
+  "contribution_timing": "month-end",
+  "drawdown_method": "Unitized time-weighted wealth path; contributions do not reduce drawdown.",
+  "cagr_method": "Median CAGR of unitized time-weighted wealth; shown for horizons of at least 12 months.",
+  "horizons_months": [
+    1,
+    3,
+    6,
+    12,
+    24,
+    36
+  ],
+  "risk_scenarios": [
+    "Historical-anchor baseline",
+    "Return reversion (-5pp annual)",
+    "Stress (-5pp return, 1.5x vol, tighter corr)"
+  ],
+  "contribution_scenarios_weekly": [
+    0.0,
+    50.0,
+    100.0,
+    200.0
+  ],
+  "limitations": [
+    "Historical ETF returns may not persist and regime changes are not predictable.",
+    "Student-t tails improve on a Gaussian model but cannot reproduce every crash or liquidity event.",
+    "Correlations are unstable and may converge toward one in crises.",
+    "ARKK's shorter inception history and active management create selection and regime sensitivity.",
+    "ETF history contains survivorship and product-design bias; taxes, fees, spreads, and inflation are omitted.",
+    "Contribution-adjusted return is ending value divided by cash contributed minus one; it is not money-weighted IRR."
+  ]
+}
