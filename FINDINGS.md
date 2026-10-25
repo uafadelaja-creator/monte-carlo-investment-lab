@@ -1,4 +1,20 @@
-# Latest run: stat-arb integration, 18 October 2026
+# Latest run: sequential stat-arb monitoring, 25 October 2026
+
+The frozen protocol added five completed sessions through 2026-10-23 without
+changing the pair list or any model setting. No pair opened a new position. V/MA
+remains at −0.005% net with two historical entries, KO/PEP remains inactive, and
+XOM/CVX remains at −2.29% net with one historical entry. The 36-month moving-block
+loss probabilities are now 45.4%, 0.0%, and 80.1%, respectively; KO/PEP's zero is
+inactivity, not success.
+
+The new sequential ledger fingerprints the frozen protocol and compares each new
+download with the previously published sample prefix. The prior-prefix hash changed,
+showing that the upstream adjusted-price history was revised. Aggregate strategy
+drift was economically negligible, but future reports will preserve this distinction
+between new-session evidence and vendor revision. Repeated weekly results are
+dependent monitoring observations and are not treated as fresh hypothesis tests.
+
+## Stat-arb integration, 18 October 2026
 
 The new statistical-arbitrage module is a research harness, and its first fixed
 holdout run did not show an edge.

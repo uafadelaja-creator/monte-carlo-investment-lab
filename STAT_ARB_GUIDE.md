@@ -1,4 +1,4 @@
-# Historical data + statistical-arbitrage research (v0.5)
+# Historical data + statistical-arbitrage research (v0.6)
 
 This empirical module is separate from the original assumption-driven `simulate.py`.
 It tests predeclared pairs and does not generate live trade alerts or assert alpha.
@@ -31,14 +31,14 @@ does not choose a winner after seeing the holdout.
 3. Install dependencies:
 
    ```bash
-   python -m pip install -r requirements.txt
+   python -m pip install -r requirements-ci.txt
    ```
 
-4. Download exploratory data through the final trading session. The example end
-   date is exclusive:
+4. Download exploratory data through the final completed trading session. By
+   default the current date is exclusive, preventing use of an in-progress day:
 
    ```bash
-   python download_prices.py --start 2015-01-01 --end 2026-10-17
+   python download_prices.py --start 2015-01-01
    ```
 
 5. Inspect `data/download_manifest.json`, missing observations, and hashes.
@@ -50,7 +50,7 @@ does not choose a winner after seeing the holdout.
    HAC-robust attribution:
 
    ```bash
-   python download_french_factors.py
+   python download_french_factors.py --retries 3
    ```
 
 6. Run the complete fixed protocol:
@@ -67,6 +67,17 @@ does not choose a winner after seeing the holdout.
    python -m unittest discover -s tests -v
    ```
 
+8. Append an aggregate monitoring snapshot without revising the protocol:
+
+   ```bash
+   python monitor_stat_arb.py \
+     --results results/stat_arb \
+     --manifest data/download_manifest.json \
+     --prices data/adjusted_close.csv \
+     --ledger results/stat_arb/monitoring_ledger.csv \
+     --report results/stat_arb/MONITORING_LATEST.md
+   ```
+
 ## Outputs
 
 The baseline report for each pair contains net return, CAGR, volatility, Sharpe and
@@ -79,6 +90,11 @@ when the official factor file is present; its alpha p-value is not treated as pr
 
 No capital contributions are modeled in this self-financing long/short module.
 That differs from the contribution-aware ETF portfolio Monte Carlo.
+
+The monitoring ledger is idempotent by observation date, data-through date, pair,
+and protocol fingerprint. A protocol change raises an error so a revised model
+cannot be silently mixed with the frozen series. The prefix-hash check also flags
+when an upstream vendor changes previously downloaded history.
 
 ## Data and research sources
 
@@ -118,14 +134,21 @@ KO/PEP stayed at zero because it never traded. Formation-window and transaction-
 cost sensitivity was material. This is evidence of inactivity/instability, not a
 validated alpha source.
 
+## Sequential update, 25 October 2026
+
+Five additional completed sessions extended the sample through 2026-10-23. No
+pair generated a new entry, and cumulative net results remained effectively
+unchanged. V/MA's 36-month bootstrap loss probability moved from 45.7% to 45.4%;
+XOM/CVX remained approximately 80.1%; KO/PEP stayed inactive. The prior sample
+prefix did not reproduce the earlier adjusted-price hash, so the monitor records
+an upstream revision warning. No parameters were changed in response.
+
 ## Roadmap
 
-1. Run and archive the fixed protocol on real exploratory data.
-2. Add official Kenneth French factors and HAC-robust attribution without using
-   significance alone as an edge claim.
-3. Replace adjusted-close fills with timestamped executable-price approximations
+1. Continue the frozen sequential ledger without treating weekly runs as independent tests.
+2. Replace adjusted-close fills with timestamped executable-price approximations
    and observed liquidity/borrow assumptions.
-4. Add a delisting-inclusive, point-in-time universe if authorized data become
+3. Add a delisting-inclusive, point-in-time universe if authorized data become
    available.
-5. Forward-paper-trade timestamped signals before considering any real-money use.
+4. Forward-paper-trade timestamped signals before considering any real-money use.
 

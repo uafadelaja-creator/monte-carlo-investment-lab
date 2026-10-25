@@ -2,15 +2,31 @@ name: Empirical research validation
 
 on:
   workflow_dispatch:
-  push:
+  pull_request:
     branches:
-      - feature/empirical-stat-arb-20261013
+      - main
     paths:
       - "download_prices.py"
+      - "download_french_factors.py"
       - "pairs_research.py"
       - "run_stat_arb_research.py"
+      - "monitor_stat_arb.py"
       - "tests/**"
-      - "requirements.txt"
+      - "requirements*.txt"
+      - ".github/workflows/empirical-research.yml"
+  push:
+    branches:
+      - main
+      - feature/empirical-stat-arb-20261013
+      - feature/prequential-monitoring-20261025
+    paths:
+      - "download_prices.py"
+      - "download_french_factors.py"
+      - "pairs_research.py"
+      - "run_stat_arb_research.py"
+      - "monitor_stat_arb.py"
+      - "tests/**"
+      - "requirements*.txt"
       - ".github/workflows/empirical-research.yml"
 
 permissions:
@@ -29,16 +45,16 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: python -m pip install -r requirements.txt
+        run: python -m pip install -r requirements-ci.txt
 
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
 
       - name: Download exploratory market data
-        run: python download_prices.py --start 2015-01-01 --end 2026-10-17
+        run: python download_prices.py --start 2015-01-01
 
       - name: Download official Kenneth French factors
-        run: python download_french_factors.py
+        run: python download_french_factors.py --retries 3
 
       - name: Run predeclared pair protocol
         run: >
@@ -47,6 +63,16 @@ jobs:
           --paths 50000
           --block 20
           --seed 20261018
+
+      - name: Update sequential evidence monitor
+        run: |
+          cp results/stat_arb_current/monitoring_ledger.csv results/stat_arb/monitoring_ledger.csv
+          python monitor_stat_arb.py \
+            --results results/stat_arb \
+            --manifest data/download_manifest.json \
+            --prices data/adjusted_close.csv \
+            --ledger results/stat_arb/monitoring_ledger.csv \
+            --report results/stat_arb/MONITORING_LATEST.md
 
       - name: Upload aggregate research outputs
         uses: actions/upload-artifact@v4
@@ -63,4 +89,6 @@ jobs:
             results/stat_arb/predeclared_pair_summary.csv
             results/stat_arb/cost_window_sensitivity.csv
             results/stat_arb/STAT_ARB_RESULTS.md
+            results/stat_arb/monitoring_ledger.csv
+            results/stat_arb/MONITORING_LATEST.md
 

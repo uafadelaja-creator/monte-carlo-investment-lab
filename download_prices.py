@@ -9,7 +9,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -141,7 +141,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tickers", nargs="+", default=list(DEFAULT_TICKERS))
     parser.add_argument("--start", default="2015-01-01")
-    parser.add_argument("--end", default="2026-10-17", help="exclusive (YYYY-MM-DD)")
+    parser.add_argument(
+        "--end",
+        default=date.today().isoformat(),
+        help=(
+            "exclusive (YYYY-MM-DD); defaults to the current date so an "
+            "in-progress session is never requested"
+        ),
+    )
     parser.add_argument("--outdir", type=Path, default=Path("data"))
     args = parser.parse_args()
     download([ticker.upper() for ticker in args.tickers], args.start, args.end, args.outdir)

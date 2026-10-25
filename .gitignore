@@ -5,8 +5,10 @@ data/raw_close.csv
 data/download_manifest.json
 data/french_factors_daily.csv
 data/french_factors_manifest.json
+data/stat_arb_local/
 results/stat_arb/*_daily.csv
 results/stat_arb/
+results/stat_arb_20*/
 
 __pycache__/
 *.py[cod]
