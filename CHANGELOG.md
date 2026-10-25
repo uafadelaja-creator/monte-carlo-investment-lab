@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.6 · 25 October 2026
+
+- Extended the frozen pair holdout through 23 October without changing hypotheses
+  or trading parameters; five new sessions produced no entries.
+- Added an idempotent sequential evidence ledger and protocol SHA-256 fingerprint.
+- Added a prior-prefix adjusted-price hash check to disclose upstream data revisions.
+- Expanded aggregate reports with 12- and 36-month profit/loss probabilities.
+- Added bounded Kenneth French download retries and dynamic exclusion of the
+  current in-progress market session.
+- Pinned CI's direct dependencies and expanded the test suite from seven to eleven tests.
+
 ## v0.5 · 18 October 2026
 
 - Integrated the statistical-arbitrage prototype as a separate empirical layer.

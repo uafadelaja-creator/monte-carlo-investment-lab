@@ -72,6 +72,9 @@ def run(args: argparse.Namespace) -> None:
         one_year = next(
             row for row in report["bootstrap"] if row["horizon_months"] == 12
         )
+        three_year = next(
+            row for row in report["bootstrap"] if row["horizon_months"] == 36
+        )
         summary_rows.append(
             {
                 "pair": "/".join(report["pair"]),
@@ -85,8 +88,21 @@ def run(args: argparse.Namespace) -> None:
                 "max_drawdown": strategy["max_drawdown"],
                 "sharpe_rf_0": strategy["sharpe_rf_0"],
                 "one_year_bootstrap_median_return": one_year["median_return"],
+                "one_year_bootstrap_probability_profitable": one_year[
+                    "probability_profitable"
+                ],
                 "one_year_bootstrap_probability_loss": one_year["probability_loss"],
                 "one_year_bootstrap_median_drawdown": one_year["median_max_drawdown"],
+                "three_year_bootstrap_median_return": three_year["median_return"],
+                "three_year_bootstrap_probability_profitable": three_year[
+                    "probability_profitable"
+                ],
+                "three_year_bootstrap_probability_loss": three_year[
+                    "probability_loss"
+                ],
+                "three_year_bootstrap_median_drawdown": three_year[
+                    "median_max_drawdown"
+                ],
                 "ff3_annualized_alpha_zero_cash": report["fama_french_attribution"].get(
                     "annualized_alpha_zero_cash"
                 ),
@@ -121,23 +137,24 @@ def run(args: argparse.Namespace) -> None:
     lines = [
         "# Predeclared statistical-arbitrage research",
         "",
-        f"Data through: **{manifest.get('latest_date', 'not documented')}**  ",
-        f"Source: **{manifest.get('provider', 'manifest unavailable')}**  ",
-        f"Test period starts: **{args.test_start}**  ",
-        f"Paths per pair and horizon: **{args.paths:,}**  ",
+        f"Data through: **{manifest.get('latest_date', 'not documented')}**",
+        f"Source: **{manifest.get('provider', 'manifest unavailable')}**",
+        f"Test period starts: **{args.test_start}**",
+        f"Paths per pair and horizon: **{args.paths:,}**",
         f"Seed: **{args.seed}** (horizon-specific deterministic offsets)",
         "",
         "These are fixed hypothesis tests, not ranked trade recommendations.",
         "Adjusted closes are total-return approximations rather than executable prices.",
         "",
-        "| Pair | Net cumulative | CAGR | Volatility | Max drawdown | Entries | 12m bootstrap P(loss) |",
-        "|---|---:|---:|---:|---:|---:|---:|",
+        "| Pair | Net cumulative | CAGR | Volatility | Max drawdown | Entries | 12m P(loss) | 36m P(loss) |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in summary_rows:
         lines.append(
             "| {pair} | {net_cumulative_return:.2%} | {net_cagr:.2%} | "
             "{annualized_volatility:.2%} | {max_drawdown:.2%} | {entries} | "
-            "{one_year_bootstrap_probability_loss:.1%} |".format(**row)
+            "{one_year_bootstrap_probability_loss:.1%} | "
+            "{three_year_bootstrap_probability_loss:.1%} |".format(**row)
         )
     lines += [
         "",

@@ -6,6 +6,8 @@ import hashlib
 import io
 import json
 import re
+import time
+import urllib.error
 import urllib.request
 import zipfile
 from datetime import datetime, timezone
@@ -24,10 +26,25 @@ def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
-def download(url: str, outdir: Path) -> dict:
+def fetch_archive(url: str, retries: int = 3) -> bytes:
     request = urllib.request.Request(url, headers={"User-Agent": "MonteCarloInvestmentLab/0.5"})
-    with urllib.request.urlopen(request, timeout=90) as response:
-        archive = response.read()
+    retryable = {429, 500, 502, 503, 504}
+    for attempt in range(1, retries + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=90) as response:
+                return response.read()
+        except urllib.error.HTTPError as exc:
+            if exc.code not in retryable or attempt == retries:
+                raise
+        except urllib.error.URLError:
+            if attempt == retries:
+                raise
+        time.sleep(2 ** (attempt - 1))
+    raise RuntimeError("unreachable")
+
+
+def download(url: str, outdir: Path, retries: int = 3) -> dict:
+    archive = fetch_archive(url, retries=retries)
     with zipfile.ZipFile(io.BytesIO(archive)) as bundle:
         names = bundle.namelist()
         if len(names) != 1:
@@ -91,8 +108,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", default=DEFAULT_URL)
     parser.add_argument("--outdir", type=Path, default=Path("data"))
+    parser.add_argument("--retries", type=int, default=3)
     args = parser.parse_args()
-    download(args.url, args.outdir)
+    if args.retries < 1:
+        raise ValueError("--retries must be at least 1")
+    download(args.url, args.outdir, retries=args.retries)
 
 
 if __name__ == "__main__":

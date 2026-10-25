@@ -4,7 +4,7 @@ A reproducible investment-risk research project comparing a speculative-technolo
 
 **Live project:** https://uafadelaja-creator.github.io/monte-carlo-investment-lab/
 
-## Current research release: v0.5 · 18 October 2026
+## Current research release: v0.6 · 25 October 2026
 
 The repository now keeps three layers deliberately separate:
 
@@ -16,7 +16,8 @@ The repository now keeps three layers deliberately separate:
    same-industry pair hypotheses with delayed fills, modeled costs, and a holdout.
    It is not a signal service and has not established profitable alpha.
 
-Version 0.5 adds the third layer's reproducible research harness:
+Version 0.6 preserves the third layer's frozen protocol and adds sequential,
+prequential-style evidence monitoring:
 
 - Fixed hypotheses: V/MA, KO/PEP, and XOM/CVX; no winner is selected ex post.
 - A 2023-01-03 holdout start with 252-day trailing formation, monthly refits,
@@ -27,20 +28,30 @@ Version 0.5 adds the third layer's reproducible research harness:
 - Tests for execution delay, look-ahead isolation, cost deduction, and bootstrap
   reproducibility; a GitHub Actions workflow downloads data at run time and does
   not commit vendor price files.
+- An append-only aggregate monitoring ledger, frozen-protocol fingerprint, and
+  prior-prefix price-hash check so repeated weekly runs cannot be mistaken for
+  independent tests or silently absorb upstream vendor revisions.
+- Exact CI dependency pins, bounded retries for the official factor download,
+  and data-download defaults that exclude the current in-progress session.
 
-### First fixed holdout result
+### Current fixed holdout result
 
-The documented protocol was run on 2,965 adjusted daily observations through
-16 October 2026, with a 3 January 2023 holdout start. It produced only three
+The documented protocol was refreshed on 2,970 adjusted daily observations through
+23 October 2026, with a 3 January 2023 holdout start. It still produced only three
 entries across all pairs: V/MA netted −0.005%, KO/PEP stayed flat, and XOM/CVX
 netted −2.29%. Exposure ranged from 0% to 2.1% of sessions. The 36-month
-moving-block loss probability was 45.7% for V/MA and 80.1% for XOM/CVX; KO/PEP's
+moving-block loss probability was 45.4% for V/MA and 80.1% for XOM/CVX; KO/PEP's
 0% loss frequency reflects no trades, not a successful strategy.
+
+The five new sessions generated no entries. The adjusted-price hash for the prior
+sample did not reproduce byte-for-byte, so the monitor explicitly flags upstream
+vendor revision risk. Aggregate strategy changes were economically negligible.
 
 Cost and formation-window sensitivity changed outcomes materially. Descriptive
 Fama-French alpha estimates were not statistically persuasive and are not proof
 of implementable alpha. The current result is therefore **no demonstrated
-statistical-arbitrage edge**. See `RUN_2026-10-18.md` and `STAT_ARB_GUIDE.md`.
+statistical-arbitrage edge**. See `RUN_2026-10-25.md`,
+`results/stat_arb_current/MONITORING_LATEST.md`, and `STAT_ARB_GUIDE.md`.
 
 ## Empirical ETF-proxy release: v0.4 · 11 October 2026
 
@@ -138,8 +149,8 @@ prices are gitignored because adjusted closes are not executable quotes and
 third-party redistribution permissions must be respected.
 
 ```bash
-python download_prices.py --start 2015-01-01 --end 2026-10-17
-python download_french_factors.py
+python download_prices.py --start 2015-01-01
+python download_french_factors.py --retries 3
 python run_stat_arb_research.py \
   --test-start 2023-01-03 \
   --paths 50000 --block 20 --seed 20261018
@@ -147,6 +158,9 @@ python run_stat_arb_research.py \
 
 The pair module has no contribution schedule: it models a self-financing long/short
 return stream. The ETF portfolio modules separately preserve contribution accounting.
+Use `monitor_stat_arb.py` to append a dated aggregate snapshot without changing the
+frozen model. Repeated snapshots are dependent monitoring observations, not new
+independent hypothesis tests.
 
 ## Methodology
 
@@ -177,6 +191,8 @@ The historical engine resamples contiguous three-month blocks of **joint** ARKK/
 - `download_french_factors.py`: official Kenneth French daily factor download and manifest.
 - `pairs_research.py`: delayed-fill, cost-aware single-pair walk-forward engine.
 - `run_stat_arb_research.py`: fixed three-pair runner and robustness tables.
+- `monitor_stat_arb.py`: idempotent frozen-protocol evidence ledger and vendor-revision check.
+- `results/stat_arb_current/monitoring_ledger.csv`: dated aggregate evidence snapshots.
 - `.github/workflows/empirical-research.yml`: repeatable tests and real-data run.
 - Earlier run reports remain preserved for auditability.
 
@@ -201,7 +217,7 @@ Monte Carlo output is conditional on its input sample and assumptions. It does n
 
 > Built and published a Python investment-risk lab using 50,000 joint moving-block-bootstrap paths and 140 months of ARKK, QUAL, and SPY adjusted returns; modeled matched contribution schedules, empirical correlations, non-normal tails, drawdowns, benchmark-beating frequencies, stress tests, and reproducible multi-horizon wealth distributions.
 
-Current extension, accurately labeled as research in progress:
+Current empirical extension:
 
-> Developing a walk-forward statistical-arbitrage research harness for predeclared same-industry pairs with one-session execution delay, explicit turnover and borrow costs, broad/sector benchmarks, sensitivity tests, leakage checks, and moving-block uncertainty analysis.
+> Built a reproducible walk-forward statistical-arbitrage research harness for predeclared same-industry pairs with delayed execution, explicit costs, leakage tests, 50,000-path block resampling, and sequential evidence monitoring; the initial fixed-pair holdout correctly reports no robust alpha.
 
