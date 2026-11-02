@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.7 · 1 November 2026
+
+- Extended the frozen pair holdout through 30 October; five new sessions produced
+  no entries and did not change the no-edge conclusion.
+- Added `forward_signal_audit.py`, a prospective append-only ledger with chained
+  SHA-256 integrity, idempotent observations, and next-session resolution logic.
+- Added raw open/high/low/volume audit downloads while keeping all vendor tables
+  excluded from Git.
+- Explicitly labels daily range as a non-spread proxy and borrow availability as
+  unobserved rather than inventing execution realism.
+- Extended official Kenneth French factors through September 2026 and expanded
+  the validation suite from eleven to sixteen tests.
+
 ## v0.6 · 25 October 2026
 
 - Extended the frozen pair holdout through 23 October without changing hypotheses

@@ -64,6 +64,12 @@ def download(tickers: list[str], start: str, end: str, outdir: Path) -> dict:
 
     adjusted: dict[str, pd.Series] = {}
     raw: dict[str, pd.Series] = {}
+    audit_fields: dict[str, dict[str, pd.Series]] = {
+        "raw_open": {},
+        "raw_high": {},
+        "raw_low": {},
+        "volume": {},
+    }
     warnings: list[str] = []
     for ticker in tickers:
         adj = _field(data, ticker, "Adj Close")
@@ -77,6 +83,15 @@ def download(tickers: list[str], start: str, end: str, outdir: Path) -> dict:
         adjusted[ticker] = adj
         if close is not None:
             raw[ticker] = close
+        for output_name, provider_name in (
+            ("raw_open", "Open"),
+            ("raw_high", "High"),
+            ("raw_low", "Low"),
+            ("volume", "Volume"),
+        ):
+            series = _field(data, ticker, provider_name)
+            if series is not None:
+                audit_fields[output_name][ticker] = series
 
     adjusted_frame = pd.DataFrame(adjusted).sort_index()
     raw_frame = pd.DataFrame(raw).reindex(adjusted_frame.index).sort_index()
@@ -94,6 +109,14 @@ def download(tickers: list[str], start: str, end: str, outdir: Path) -> dict:
     raw_path = outdir / "raw_close.csv"
     adjusted_frame.to_csv(adjusted_path, float_format="%.10f")
     raw_frame.to_csv(raw_path, float_format="%.10f")
+    audit_paths: dict[str, Path] = {}
+    for output_name, values in audit_fields.items():
+        frame = pd.DataFrame(values).reindex(adjusted_frame.index).sort_index()
+        frame.index = adjusted_frame.index
+        frame.index.name = "Date"
+        path = outdir / f"{output_name}.csv"
+        frame.to_csv(path, float_format="%.10f")
+        audit_paths[path.name] = path
     manifest = {
         "provider": "Yahoo Finance through yfinance (unofficial; exploratory research only)",
         "source_url": "https://ranaroussi.github.io/yfinance/",
@@ -115,6 +138,7 @@ def download(tickers: list[str], start: str, end: str, outdir: Path) -> dict:
         "file_sha256": {
             "adjusted_close.csv": _sha256(adjusted_path),
             "raw_close.csv": _sha256(raw_path),
+            **{name: _sha256(path) for name, path in audit_paths.items()},
         },
         "warnings": warnings,
         "limitations": [
@@ -122,6 +146,7 @@ def download(tickers: list[str], start: str, end: str, outdir: Path) -> dict:
             "vendor data can be revised and may omit delistings or corrections",
             "adjusted prices are total-return approximations, not executable quotes",
             "raw closes do not by themselves model splits, dividends, spreads, or slippage",
+            "daily open/high/low/volume fields are audit context, not executable quotes or bid/ask data",
             "daily bars cannot establish next-open or intraday fill quality",
             "redistribution rights must be checked; raw downloads are gitignored",
         ],

@@ -4,7 +4,7 @@ A reproducible investment-risk research project comparing a speculative-technolo
 
 **Live project:** https://uafadelaja-creator.github.io/monte-carlo-investment-lab/
 
-## Current research release: v0.6 · 25 October 2026
+## Current research release: v0.7 · 1 November 2026
 
 The repository now keeps three layers deliberately separate:
 
@@ -16,8 +16,8 @@ The repository now keeps three layers deliberately separate:
    same-industry pair hypotheses with delayed fills, modeled costs, and a holdout.
    It is not a signal service and has not established profitable alpha.
 
-Version 0.6 preserves the third layer's frozen protocol and adds sequential,
-prequential-style evidence monitoring:
+Version 0.7 preserves the third layer's frozen protocol, continues sequential
+monitoring, and starts a prospective paper-signal audit:
 
 - Fixed hypotheses: V/MA, KO/PEP, and XOM/CVX; no winner is selected ex post.
 - A 2023-01-03 holdout start with 252-day trailing formation, monthly refits,
@@ -33,25 +33,29 @@ prequential-style evidence monitoring:
   independent tests or silently absorb upstream vendor revisions.
 - Exact CI dependency pins, bounded retries for the official factor download,
   and data-download defaults that exclude the current in-progress session.
+- A chained-SHA forward ledger that begins on 1 November 2026 without backfilling
+  signals. Daily range/liquidity fields are audit context; bid/ask spread and
+  borrow inventory remain explicitly unobserved.
 
 ### Current fixed holdout result
 
-The documented protocol was refreshed on 2,970 adjusted daily observations through
-23 October 2026, with a 3 January 2023 holdout start. It still produced only three
+The documented protocol was refreshed on 2,975 adjusted daily observations through
+30 October 2026, with a 3 January 2023 holdout start. It still produced only three
 entries across all pairs: V/MA netted −0.005%, KO/PEP stayed flat, and XOM/CVX
 netted −2.29%. Exposure ranged from 0% to 2.1% of sessions. The 36-month
-moving-block loss probability was 45.4% for V/MA and 80.1% for XOM/CVX; KO/PEP's
+moving-block loss probability was 45.2% for V/MA and 79.9% for XOM/CVX; KO/PEP's
 0% loss frequency reflects no trades, not a successful strategy.
 
-The five new sessions generated no entries. The adjusted-price hash for the prior
-sample did not reproduce byte-for-byte, so the monitor explicitly flags upstream
-vendor revision risk. Aggregate strategy changes were economically negligible.
+The five new sessions generated no entries. All three pairs were flat at the
+forward-audit initialization. The adjusted-price hash for the prior sample did not
+reproduce byte-for-byte, so the monitor explicitly flags upstream vendor revision
+risk; the largest relative local prefix difference was below 0.0001%.
 
 Cost and formation-window sensitivity changed outcomes materially. Descriptive
 Fama-French alpha estimates were not statistically persuasive and are not proof
 of implementable alpha. The current result is therefore **no demonstrated
-statistical-arbitrage edge**. See `RUN_2026-10-25.md`,
-`results/stat_arb_current/MONITORING_LATEST.md`, and `STAT_ARB_GUIDE.md`.
+statistical-arbitrage edge**. See `RUN_2026-11-01.md`,
+`results/stat_arb_current/FORWARD_SIGNAL_AUDIT.md`, and `STAT_ARB_GUIDE.md`.
 
 ## Empirical ETF-proxy release: v0.4 · 11 October 2026
 
@@ -162,6 +166,23 @@ Use `monitor_stat_arb.py` to append a dated aggregate snapshot without changing 
 frozen model. Repeated snapshots are dependent monitoring observations, not new
 independent hypothesis tests.
 
+Initialize or extend the separate forward paper-signal audit only after the final
+completed session is available:
+
+```bash
+python forward_signal_audit.py \
+  --results results/stat_arb \
+  --data data \
+  --ledger results/stat_arb/forward_signal_ledger.csv \
+  --report results/stat_arb/FORWARD_SIGNAL_AUDIT.md
+```
+
+The audit does not backfill old signals. It freezes the latest observed state and
+uses a chained SHA-256 ledger so prior records cannot be changed silently. A newly
+observed entry is resolved only on a later run, after its next completed session
+exists. Raw close and daily range/volume fields are audit context—not evidence of
+an executable fill, bid/ask spread, or available borrow.
+
 ## Methodology
 
 The historical engine resamples contiguous three-month blocks of **joint** ARKK/QUAL/SPY returns. This preserves observed same-month co-movement and short return sequences instead of treating assets or months as independent. Identical contribution dates are applied to all arms.
@@ -192,7 +213,9 @@ The historical engine resamples contiguous three-month blocks of **joint** ARKK/
 - `pairs_research.py`: delayed-fill, cost-aware single-pair walk-forward engine.
 - `run_stat_arb_research.py`: fixed three-pair runner and robustness tables.
 - `monitor_stat_arb.py`: idempotent frozen-protocol evidence ledger and vendor-revision check.
+- `forward_signal_audit.py`: append-only, hash-chained prospective state and execution audit.
 - `results/stat_arb_current/monitoring_ledger.csv`: dated aggregate evidence snapshots.
+- `results/stat_arb_current/forward_signal_ledger.csv`: forward observations from 1 November 2026 onward.
 - `.github/workflows/empirical-research.yml`: repeatable tests and real-data run.
 - Earlier run reports remain preserved for auditability.
 
@@ -219,5 +242,5 @@ Monte Carlo output is conditional on its input sample and assumptions. It does n
 
 Current empirical extension:
 
-> Built a reproducible walk-forward statistical-arbitrage research harness for predeclared same-industry pairs with delayed execution, explicit costs, leakage tests, 50,000-path block resampling, and sequential evidence monitoring; the initial fixed-pair holdout correctly reports no robust alpha.
+> Built a reproducible walk-forward statistical-arbitrage research harness for predeclared same-industry pairs with delayed execution, explicit costs, leakage tests, 50,000-path block resampling, sequential evidence monitoring, and a tamper-evident forward audit; the fixed holdout correctly reports no robust alpha.
 
