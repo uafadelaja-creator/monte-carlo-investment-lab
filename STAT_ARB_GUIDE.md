@@ -1,4 +1,4 @@
-# Historical data + statistical-arbitrage research (v0.6)
+# Historical data + statistical-arbitrage research (v0.7)
 
 This empirical module is separate from the original assumption-driven `simulate.py`.
 It tests predeclared pairs and does not generate live trade alerts or assert alpha.
@@ -78,6 +78,17 @@ does not choose a winner after seeing the holdout.
      --report results/stat_arb/MONITORING_LATEST.md
    ```
 
+9. Append a prospective state snapshot. Do not seed this ledger with historical
+   signals that were not actually observed before their next session:
+
+   ```bash
+   python forward_signal_audit.py \
+     --results results/stat_arb \
+     --data data \
+     --ledger results/stat_arb/forward_signal_ledger.csv \
+     --report results/stat_arb/FORWARD_SIGNAL_AUDIT.md
+   ```
+
 ## Outputs
 
 The baseline report for each pair contains net return, CAGR, volatility, Sharpe and
@@ -95,6 +106,12 @@ The monitoring ledger is idempotent by observation date, data-through date, pair
 and protocol fingerprint. A protocol change raises an error so a revised model
 cannot be silently mixed with the frozen series. The prefix-hash check also flags
 when an upstream vendor changes previously downloaded history.
+
+The forward ledger starts prospectively and hash-chains every observation. A newly
+observed entry remains pending until a later run has the next completed session.
+The resolution stores adjusted model prices and raw open/close audit references,
+plus daily range and trailing dollar-volume context. These are not proof of an
+executable fill. Bid/ask quotes and borrow inventory remain unavailable.
 
 ## Data and research sources
 
@@ -143,12 +160,25 @@ XOM/CVX remained approximately 80.1%; KO/PEP stayed inactive. The prior sample
 prefix did not reproduce the earlier adjusted-price hash, so the monitor records
 an upstream revision warning. No parameters were changed in response.
 
+## Forward-audit initialization, 1 November 2026
+
+Five additional completed sessions extended the sample through 2026-10-30 with
+no new entry. All three pairs were flat at the prospective audit start. V/MA had
+a 1.08 Z-score but a 0.814 trailing cointegration p-value; XOM/CVX had a −0.60
+Z-score and 0.071 p-value; KO/PEP had no valid current estimate. Because no entry
+was observed, no next-session execution audit is pending.
+
+The unchanged historical results remain −0.005% net for V/MA, 0% inactive for
+KO/PEP, and −2.29% for XOM/CVX. The 36-month moving-block loss probabilities are
+45.2%, 0.0% inactive, and 79.9%. This remains an underpowered negative result.
+
 ## Roadmap
 
-1. Continue the frozen sequential ledger without treating weekly runs as independent tests.
-2. Replace adjusted-close fills with timestamped executable-price approximations
-   and observed liquidity/borrow assumptions.
+1. Continue both frozen ledgers without treating weekly runs as independent tests.
+2. Add a documented bid/ask or trade-and-quote source and contemporaneous borrow
+   inventory if accessible; do not infer either from daily bars.
 3. Add a delisting-inclusive, point-in-time universe if authorized data become
    available.
-4. Forward-paper-trade timestamped signals before considering any real-money use.
+4. Accumulate enough prospective events before evaluating execution slippage or
+   considering any real-money use.
 

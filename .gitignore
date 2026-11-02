@@ -6,6 +6,11 @@ data/download_manifest.json
 data/french_factors_daily.csv
 data/french_factors_manifest.json
 data/stat_arb_local/
+data/stat_arb_20*/
+data/raw_open.csv
+data/raw_high.csv
+data/raw_low.csv
+data/volume.csv
 results/stat_arb/*_daily.csv
 results/stat_arb/
 results/stat_arb_20*/

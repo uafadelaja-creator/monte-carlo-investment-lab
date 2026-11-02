@@ -11,6 +11,7 @@ on:
       - "pairs_research.py"
       - "run_stat_arb_research.py"
       - "monitor_stat_arb.py"
+      - "forward_signal_audit.py"
       - "tests/**"
       - "requirements*.txt"
       - ".github/workflows/empirical-research.yml"
@@ -25,6 +26,7 @@ on:
       - "pairs_research.py"
       - "run_stat_arb_research.py"
       - "monitor_stat_arb.py"
+      - "forward_signal_audit.py"
       - "tests/**"
       - "requirements*.txt"
       - ".github/workflows/empirical-research.yml"
@@ -74,6 +76,17 @@ jobs:
             --ledger results/stat_arb/monitoring_ledger.csv \
             --report results/stat_arb/MONITORING_LATEST.md
 
+      - name: Update forward paper-signal audit
+        run: |
+          if [ -f results/stat_arb_current/forward_signal_ledger.csv ]; then
+            cp results/stat_arb_current/forward_signal_ledger.csv results/stat_arb/forward_signal_ledger.csv
+          fi
+          python forward_signal_audit.py \
+            --results results/stat_arb \
+            --data data \
+            --ledger results/stat_arb/forward_signal_ledger.csv \
+            --report results/stat_arb/FORWARD_SIGNAL_AUDIT.md
+
       - name: Upload aggregate research outputs
         uses: actions/upload-artifact@v4
         with:
@@ -91,4 +104,6 @@ jobs:
             results/stat_arb/STAT_ARB_RESULTS.md
             results/stat_arb/monitoring_ledger.csv
             results/stat_arb/MONITORING_LATEST.md
+            results/stat_arb/forward_signal_ledger.csv
+            results/stat_arb/FORWARD_SIGNAL_AUDIT.md
 

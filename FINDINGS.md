@@ -1,4 +1,30 @@
-# Latest run: sequential stat-arb monitoring, 25 October 2026
+# Latest run: forward audit initialization, 1 November 2026
+
+Five completed sessions extended the unchanged protocol through 2026-10-30.
+No pair opened a new position: V/MA remains at −0.005% net with two historical
+entries, KO/PEP remains inactive, and XOM/CVX remains at −2.29% net with one
+historical entry. Their updated 36-month moving-block loss probabilities are
+45.2%, 0.0%, and 79.9%, respectively. KO/PEP's zero again denotes inactivity.
+
+The new `forward_signal_audit.py` begins a prospective, append-only record rather
+than pretending older signals were observed live. Its first frozen snapshot has
+all three pairs flat. V/MA's Z-score was 1.08 with cointegration p=0.814;
+XOM/CVX's was −0.60 with p=0.071; KO/PEP had no valid current estimate. No
+execution audit is pending, and no trade alert was produced.
+
+Each audit row is chained to the previous SHA-256. Future entry observations can
+only be resolved after a later completed session is available. Raw opens/closes,
+daily range, and volume are audit context; daily range is not a bid/ask spread and
+borrow availability remains unobserved. Sixteen tests pass, including CSV
+round-trip chain integrity and idempotency.
+
+The refreshed Yahoo/yfinance sample contains 2,975 complete rows through
+2026-10-30. The prior prefix hash changed again, but a direct local comparison
+found the maximum relative revision below 0.0001%, consistent with economically
+negligible vendor precision changes. Official Kenneth French factors now extend
+through 2026-09-30. These updates do not create evidence of alpha.
+
+## Archived sequential update, 25 October 2026
 
 The frozen protocol added five completed sessions through 2026-10-23 without
 changing the pair list or any model setting. No pair opened a new position. V/MA
