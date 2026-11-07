@@ -1,11 +1,40 @@
 import unittest
+import tempfile
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 import historical_analysis as ha
 
 
 class HistoricalAnalysisTests(unittest.TestCase):
+    def test_daily_input_uses_last_price_and_excludes_partial_month(self):
+        dates = pd.bdate_range("2022-01-01", "2026-11-06")
+        prices = pd.DataFrame(np.arange(len(dates))[:, None] + np.ones((len(dates), 3)),
+                              index=dates, columns=ha.TICKERS)
+        complete = ha.complete_month_prices(prices, "2026-11-07")
+        self.assertEqual(complete.index[-1], pd.Timestamp("2026-10-01"))
+        np.testing.assert_array_equal(complete.iloc[-1], prices.loc["2026-10-30"])
+        expected = complete.iloc[-1] / complete.iloc[-2] - 1
+        np.testing.assert_allclose(ha.monthly_returns(complete).iloc[-1], expected)
+
+    def test_missing_month_is_rejected(self):
+        dates = pd.date_range("2020-01-01", periods=60, freq="MS").delete(20)
+        prices = pd.DataFrame(100., index=dates, columns=ha.TICKERS)
+        with self.assertRaisesRegex(ValueError, "Missing calendar months"):
+            ha.complete_month_prices(prices, "2026-11-07")
+
+    def test_invalid_csv_inputs_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "prices.csv"
+            for body in ["2020-01-01,1,2,3\n2020-01-01,2,3,4",
+                         "2020-01-01,0,2,3", "2020-01-01,1,inf,3",
+                         "2020-01-01,1,2,3\n2020-01-02,2,,4"]:
+                path.write_text("Date,ARKK,QUAL,SPY\n" + body + "\n")
+                with self.assertRaises((ValueError, RuntimeError)):
+                    ha.load_prices("2015-01-01", str(path))
+
     def test_joint_block_sampling_is_reproducible(self):
         returns = np.arange(90, dtype=float).reshape(30, 3) / 10_000
         first = ha.sample_joint_returns(returns, 100, 36, 3, 123)

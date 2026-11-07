@@ -1,3 +1,14 @@
+## 2026-11-07 · Historical ETF refresh (engine v0.4.1)
+
+- Ingested the user-provided daily adjusted-price CSV locally, with input hash,
+  date range, row count, and dependency versions recorded in aggregate metadata.
+- Recomputed 50,000-path monthly bootstrap results through October 2026; excluded
+  partial November. Preserved the separate illustrative and pairs-research models.
+- Added strict CSV validation and missing-month checks, and corrected the historical
+  drawdown chart to include initial capital in its running peak.
+- Generated the historical page from aggregate JSON, added ETF explanations, and
+  linked it prominently from the main dashboard. Vendor prices remain gitignored.
+
 # Changelog
 
 ## v0.7 · 1 November 2026

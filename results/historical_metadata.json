@@ -1,6 +1,17 @@
 {
-  "version": "0.4",
-  "data_source": "Yahoo Finance chart API adjusted monthly closes",
+  "version": "0.4.1",
+  "data_source": "User-provided Yahoo Finance/yfinance adjusted daily closes, downloaded 2026-11-07",
+  "as_of": "2026-11-07",
+  "input_price_file": "data/historical_prices.csv",
+  "input_price_sha256": "e62439bbdd51118ffa84c2ca9f3cd294c9af88065be9d3d18c3977755feda12a",
+  "input_price_rows": 2980,
+  "input_first_date": "2015-01-02",
+  "input_last_date": "2026-11-06",
+  "dependencies": {
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "matplotlib": "3.10.8"
+  },
   "price_type": "adjusted close",
   "proxy_assets": [
     "ARKK",
@@ -8,15 +19,15 @@
     "SPY"
   ],
   "historical_first_price_month": "2015-01-01",
-  "historical_last_complete_price_month": "2026-09-01",
+  "historical_last_complete_price_month": "2026-10-01",
   "first_return_month": "2015-02-01",
-  "last_return_month": "2026-09-01",
-  "common_return_months": 140,
+  "last_return_month": "2026-10-01",
+  "common_return_months": 141,
   "current_market_snapshot": {
-    "date": "2026-10-09",
-    "ARKK": 89.62000274658203,
-    "QUAL": 227.1199951171875,
-    "SPY": 778.5700073242188
+    "date": "2026-11-06",
+    "ARKK": 75.45999908447266,
+    "QUAL": 54.83000183105469,
+    "SPY": 735.2899780273438
   },
   "paths": 50000,
   "master_seed": 20261011,
@@ -45,8 +56,8 @@
     "QUAL": -0.15,
     "SPY": -0.18
   },
-  "cached_price_file": "data/adjusted_prices_through_2026-09.csv",
-  "cached_price_sha256": "6e08c593ecc29534eca3042df4cf73a1610aa47da61956c3318dadbbfae2b001",
+  "cached_price_file": null,
+  "cached_price_sha256": null,
   "limitations": [
     "ETF proxies are not survivorship-free point-in-time stock cohorts.",
     "The sample begins in 2015 and is highly regime-dependent.",
@@ -54,7 +65,7 @@
     "Correlation and volatility can change abruptly outside the sample.",
     "Month-end data miss intramonth drawdowns and liquidity gaps.",
     "Adjusted-price histories may be revised by the data vendor.",
-    "Taxes, spreads, fund fees, inflation, and exact weekly timing are omitted.",
+    "Fund operating expenses are embedded in ETF history; no additional fee is deducted. Taxes, trading costs, inflation, and exact weekly timing are omitted.",
     "A fixed zero-percent risk-free rate is used only for transparent Sharpe comparison."
   ]
 }

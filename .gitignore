@@ -19,3 +19,7 @@ __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
+data/historical_prices.csv
+data/adjusted_prices_through_*.csv
+results/historical_wealth_fan.png
+results/historical_risk_dashboard.png

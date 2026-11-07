@@ -57,82 +57,81 @@ of implementable alpha. The current result is therefore **no demonstrated
 statistical-arbitrage edge**. See `RUN_2026-11-01.md`,
 `results/stat_arb_current/FORWARD_SIGNAL_AUDIT.md`, and `STAT_ARB_GUIDE.md`.
 
-## Empirical ETF-proxy release: v0.4 · 11 October 2026
+## Historical data refresh · 7 November 2026
 
-Version 0.4 adds the project's first completed empirical extension:
+[Open the historical results dashboard](historical_results.html).
 
-- 140 common complete monthly adjusted-return observations, February 2015–September 2026.
-- 50,000 joint moving-block-bootstrap paths at 1, 3, 6, 12, 24, and 36 months.
-- Empirical return distributions, volatility, Sharpe ratios, drawdowns, correlations, skewness, kurtosis, VaR, and CVaR.
-- Paired benchmark comparisons, a hypothetical one-month shock, and 1/3/6-month block-length sensitivity.
-- A SHA-256 input hash and archived aggregate outputs; the saved project package
-  retains its cache, while the public repository excludes vendor price tables.
-- Two GitHub-ready charts, browser-readable JSON, and a standalone historical-results page.
+The user-supplied Yahoo Finance/yfinance CSV contains **2,980 adjusted daily price
+observations from 2 January 2015 through 6 November 2026**. The historical engine
+uses the last observation of each completed month: **141 monthly returns from
+February 2015 through October 2026**. Partial November is excluded.
 
-The original Student-t parametric engine remains in `simulate.py` as a separate model-risk comparison. Historical resampling does not silently replace it.
+This refresh runs **50,000 joint moving-block-bootstrap paths**, with a three-month
+primary block, one- and six-month sensitivity, and seed `20261011`. Each ETF is a
+separate arm starting with $500 and receiving $100/week represented as $433.33 at
+month-end. These conditional simulations are not out-of-sample trading evidence.
+The original illustrative engine remains separate in `simulate.py` and `index.html`.
 
-![Observed versus simulated ETF proxy drawdowns](results/historical_drawdown.svg)
+### What the ETFs represent
 
-## Historical sample
+| ETF | Strategy | Comparison role |
+|---|---|---|
+| [ARKK](https://www.ark-funds.com/funds/arkk) | Actively managed disruptive innovation | Innovation-focused equity risk |
+| [QUAL](https://www.ishares.com/us/products/256101/QUAL) | U.S. stocks with high return on equity, stable earnings, and low debt | Quality-factor equities |
+| [SPY](https://www.ssga.com/us/en/individual/etfs/state-street-spdr-sp-500-etf-trust-spy) | S&P 500 large U.S. companies | Benchmark |
 
-| Proxy | Role | Historical CAGR | Annualized volatility | Month-end maximum drawdown | Sharpe, assumed 0% risk-free rate |
-|---|---|---:|---:|---:|---:|
-| ARKK | Speculative technology | 14.55% | 36.42% | −77.08% | 0.55 |
-| QUAL | Quality equities | 13.35% | 15.11% | −27.78% | 0.91 |
-| SPY | S&P 500 benchmark | 14.06% | 14.93% | −23.93% | 0.96 |
+These funds are not selected using Shariah screening. Do not label this comparison
+a Shariah-compliant portfolio. Quality does not mean risk-free.
 
-Observed monthly correlations were 0.69 ARKK–QUAL, 0.72 ARKK–SPY, and 0.98 QUAL–SPY. The unusually high QUAL–SPY correlation means the quality proxy supplied little diversification in this particular sample.
+### Historical sample
 
-The latest market snapshot recorded on 9 October 2026 was ARKK $89.62, QUAL $227.12, and SPY $778.57. The published simulation used only complete months through September 2026, avoiding a partial October return.
+| ETF | Historical CAGR | Annualized volatility | Month-end maximum drawdown |
+|---|---:|---:|---:|
+| ARKK | 13.48% | 36.43% | -77.08% |
+| QUAL | 13.26% | 15.06% | -27.78% |
+| SPY | 13.87% | 14.89% | -23.93% |
 
-## Baseline historical-bootstrap outcomes
+![Observed versus simulated drawdowns](results/historical_drawdown.svg)
 
-Each arm starts with $500 and receives the month-end equivalent of $100 per week. Each cell shows **median ending value [5th–95th percentile]; probability above contributed cash**.
+### Thirty-six-month baseline outcomes
 
-| Horizon | Contributed | ARKK | QUAL | SPY |
+$16,100 total contributed to each arm. Frequencies are conditional on the historical sample.
+
+| ETF | Median ending value | 5th–95th percentile | P(loss) | P(beat SPY) |
 |---|---:|---:|---:|---:|
-| 1 month | $933 | $937 [$865–$1,026]; 54.8% | $939 [$895–$974]; 65.9% | $941 [$899–$973]; 69.5% |
-| 3 months | $1,800 | $1,868 [$1,562–$2,212]; 61.3% | $1,840 [$1,701–$1,930]; 75.5% | $1,843 [$1,718–$1,924]; 77.0% |
-| 6 months | $3,100 | $3,254 [$2,515–$4,103]; 62.7% | $3,229 [$2,923–$3,449]; 75.9% | $3,234 [$2,931–$3,454]; 77.2% |
-| 12 months | $5,700 | $6,181 [$4,312–$8,675]; 65.4% | $6,129 [$5,322–$6,794]; 82.1% | $6,146 [$5,353–$6,815]; 83.5% |
-| 24 months | $10,900 | $12,742 [$7,734–$21,000]; 69.8% | $12,496 [$10,296–$14,653]; 88.4% | $12,574 [$10,405–$14,739]; 89.6% |
-| 36 months | $16,100 | $20,264 [$11,010–$38,127]; 73.2% | $19,715 [$15,591–$24,189]; 92.4% | $19,926 [$15,799–$24,409]; 93.5% |
+| ARKK | $20,335 | $11,072–$38,201 | 26.8% | 53.9% |
+| QUAL | $19,688 | $15,558–$24,180 | 7.7% | 37.9% |
+| SPY | $19,906 | $15,765–$24,368 | 6.6% | — |
 
-### Thirty-six-month detail
+All six horizons, the hypothetical shock, and block-length sensitivity are in
+`results/historical_dashboard_data.json` and the linked results page. Higher
+simulated returns do not establish a durable investment edge.
 
-| Proxy | Mean ending value | Mean return on contributed cash | Median TWR CAGR | Median / 95th-pctl max drawdown | P(beat SPY) |
-|---|---:|---:|---:|---:|---:|
-| ARKK | $21,885 | 35.9% | 14.2% | 37.7% / 66.2% | 53.2% |
-| QUAL | $19,786 | 22.9% | 13.6% | 14.4% / 27.8% | 37.7% |
-| SPY | $19,987 | 24.1% | 14.3% | 13.4% / 26.8% | — |
+### Reproduce with your downloaded CSV
 
-ARKK's right tail creates a higher mean, but the central conclusion is about risk rather than superiority: its 53.2% paired frequency of beating SPY is too close to chance to establish an edge, while its historical maximum drawdown and simulated downside are materially worse.
-
-## Run the empirical model
-
-Re-run from a local copy of the original cached input, when available:
+Place your original `historical_prices.csv` inside the local `data/` directory.
+The file is gitignored; vendor price tables are not redistributed publicly.
 
 ```bash
 python -m pip install -r requirements.txt
 python historical_analysis.py \
-  --csv data/adjusted_prices_through_2026-09.csv \
-  --paths 50000 --block 3 --seed 20261011 --as-of 2026-10-11 \
+  --csv data/historical_prices.csv \
+  --source-label "User-provided Yahoo Finance/yfinance adjusted daily closes, downloaded 2026-11-07" \
+  --paths 50000 --block 3 --seed 20261011 --as-of 2026-11-07 \
   --outdir results
+python render_historical_results.py
 ```
 
-Refresh exploratory data through Yahoo Finance via yfinance. Provider revisions
-can make refreshed output differ from the archived results:
+The exact raw input SHA-256, row count, date range, and numerical dependency
+versions are in `results/historical_metadata.json`. The original CSV and matching
+dependencies are needed to reproduce the published run; future vendor downloads
+can revise historical prices. The uploaded prices passed structural checks but
+were not independently reconciled against another provider.
 
-```bash
-python historical_analysis.py \
-  --paths 50000 --block 3 --seed 20261011 \
-  --cache-csv data/adjusted_prices_through_2026-09.csv \
-  --outdir results
-```
-
-The original input's SHA-256 is recorded in `results/historical_metadata.json`.
-Identical input, dependency versions, parameters, and seed reproduce the CSV
-outputs. The public repository does not redistribute the vendor price table.
+The renderer reads aggregate JSON, so updating results no longer requires manually
+copying numbers into the historical page. Daily prices become month-end observations;
+monthly drawdowns do not measure intramonth losses. Fund expenses are embedded in
+observed ETF history; no extra expense ratio is deducted.
 
 Run the parametric Student-t comparison separately:
 
@@ -205,7 +204,8 @@ The historical engine resamples contiguous three-month blocks of **joint** ARKK/
 - `results/historical_dashboard_data.json`: browser-readable integration data.
 - `results/historical_metadata.json`: source window, seed, hash, assumptions, and limitations.
 - `results/historical_metadata.json`: includes the original input hash and source window.
-- `RUN_2026-10-11.md`: latest concise research report.
+- `RUN_2026-10-11.md`: archived initial historical research report.
+- `render_historical_results.py`: regenerate the historical page from aggregate JSON.
 - `CHANGELOG.md`: version history and methodological upgrades.
 - `STAT_ARB_GUIDE.md`: frozen pair protocol, data caveats, and roadmap.
 - `download_prices.py`: local-only exploratory Yahoo/yfinance data fetch with hashes.

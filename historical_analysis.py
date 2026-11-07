@@ -33,7 +33,7 @@ START_CASH = 500.0
 WEEKLY_DEPOSIT = 100.0
 MONTHLY_DEPOSIT = WEEKLY_DEPOSIT * 52.0 / 12.0
 SHOCKS = np.array([-0.25, -0.15, -0.18])
-VERSION = "0.4"
+VERSION = "0.4.1"
 
 
 def fetch_yahoo_monthly(ticker: str, start: str) -> pd.Series:
@@ -77,9 +77,13 @@ def load_prices(start: str, input_csv: str | None) -> tuple[pd.DataFrame, str]:
             [fetch_yahoo_monthly(ticker, start) for ticker in TICKERS], axis=1
         )
         source = "Yahoo Finance through yfinance adjusted monthly closes (exploratory)"
-    prices = prices.sort_index().dropna(how="all")
+    if prices.index.hasnans or prices.index.has_duplicates:
+        raise ValueError("Price dates must be valid and unique")
+    prices = prices.sort_index()
     if prices.empty or prices[TICKERS].isna().all().any():
         raise RuntimeError("Missing adjusted-price history for one or more ETFs")
+    if not np.isfinite(prices.to_numpy()).all() or (prices <= 0).any().any():
+        raise ValueError("Prices must be finite, positive, and complete for all ETFs")
     return prices[TICKERS], source
 
 
@@ -87,6 +91,9 @@ def complete_month_prices(prices: pd.DataFrame, as_of: str | None) -> pd.DataFra
     cutoff = pd.Timestamp(as_of) if as_of else pd.Timestamp.now(tz="UTC").tz_localize(None)
     complete = prices.loc[prices.index.to_period("M") < cutoff.to_period("M")]
     complete = complete.resample("MS").last().dropna(how="any")
+    expected = pd.date_range(complete.index.min(), complete.index.max(), freq="MS")
+    if not complete.index.equals(expected):
+        raise ValueError("Missing calendar months would create multi-month returns")
     if len(complete) < 37:
         raise RuntimeError("At least 37 common complete-month prices are required")
     return complete
@@ -239,7 +246,7 @@ def summarize(
 
 def write_csv(path: Path, rows: list[dict[str, object]]) -> None:
     with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -278,7 +285,7 @@ def plot_historical_risk(
 ) -> None:
     normalized = prices / prices.iloc[0]
     cumulative = (1 + returns).cumprod()
-    drawdown = cumulative / cumulative.cummax() - 1
+    drawdown = cumulative / cumulative.cummax().clip(lower=1.0) - 1
     correlation = returns.corr()
     fig, axes = plt.subplots(2, 2, figsize=(12, 8))
     normalized.plot(ax=axes[0, 0], linewidth=1.8)
@@ -317,6 +324,27 @@ def plot_historical_risk(
     plt.close(fig)
 
 
+def plot_drawdown(output: Path, risk_rows: list, baseline_rows: list) -> None:
+    """Small public chart of aggregate risk, without vendor price tables."""
+    observed = [-row["historical_max_drawdown_month_end"] * 100 for row in risk_rows]
+    simulated = [row["median_max_drawdown"] * 100 for row in baseline_rows
+                 if row["months"] == 36]
+    x = np.arange(len(TICKERS))
+    fig, ax = plt.subplots(figsize=(9, 4))
+    ax.bar(x - .18, observed, .36, label="Observed month-end maximum")
+    ax.bar(x + .18, simulated, .36, label="Simulated 36-month median maximum")
+    ax.set_xticks(x, TICKERS)
+    ax.set_ylabel("Peak-to-trough decline (%)")
+    ax.set_title("Observed and simulated drawdowns")
+    ax.legend(fontsize=8)
+    fig.tight_layout()
+    with plt.rc_context({"svg.hashsalt": "historical-drawdown"}):
+        fig.savefig(output / "historical_drawdown.svg", metadata={"Date": None})
+    plt.close(fig)
+    svg_path = output / "historical_drawdown.svg"
+    svg_path.write_text("\n".join(line.rstrip() for line in svg_path.read_text().splitlines()) + "\n")
+
+
 def file_sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -331,6 +359,8 @@ def main() -> None:
     parser.add_argument("--as-of", default=None)
     parser.add_argument("--csv", default=None)
     parser.add_argument("--cache-csv", default=None)
+    parser.add_argument("--source-label", default=None,
+                        help="Provenance description for a user-supplied CSV")
     parser.add_argument("--paths", type=int, default=50_000)
     parser.add_argument("--block", type=int, default=3)
     parser.add_argument("--seed", type=int, default=20_261_011)
@@ -343,6 +373,8 @@ def main() -> None:
         raise SystemExit("block must be positive and rf must exceed -1")
 
     raw_prices, source = load_prices(args.start, args.csv)
+    if args.source_label:
+        source = args.source_label
     latest_common = raw_prices.dropna(how="any").iloc[-1]
     latest_date = str(raw_prices.dropna(how="any").index[-1].date())
     # Quantize before calculation and caching so an offline rerun from the
@@ -390,11 +422,20 @@ def main() -> None:
 
     plot_wealth_fan(args.outdir, baseline, stressed)
     plot_historical_risk(args.outdir, complete_prices, returns)
+    plot_drawdown(args.outdir, risk_rows, baseline_rows)
 
     cache_hash = file_sha256(cached_path) if cached_path else None
     metadata = {
         "version": VERSION,
         "data_source": source,
+        "as_of": args.as_of,
+        "input_price_file": str(args.csv) if args.csv else None,
+        "input_price_sha256": file_sha256(Path(args.csv)) if args.csv else None,
+        "input_price_rows": len(raw_prices),
+        "input_first_date": str(raw_prices.index.min().date()),
+        "input_last_date": str(raw_prices.index.max().date()),
+        "dependencies": {"numpy": np.__version__, "pandas": pd.__version__,
+                         "matplotlib": matplotlib.__version__},
         "price_type": "adjusted close",
         "proxy_assets": TICKERS,
         "historical_first_price_month": str(complete_prices.index.min().date()),
@@ -427,7 +468,7 @@ def main() -> None:
             "Correlation and volatility can change abruptly outside the sample.",
             "Month-end data miss intramonth drawdowns and liquidity gaps.",
             "Adjusted-price histories may be revised by the data vendor.",
-            "Taxes, spreads, fund fees, inflation, and exact weekly timing are omitted.",
+            "Fund operating expenses are embedded in ETF history; no additional fee is deducted. Taxes, trading costs, inflation, and exact weekly timing are omitted.",
             "A fixed zero-percent risk-free rate is used only for transparent Sharpe comparison.",
         ],
     }
