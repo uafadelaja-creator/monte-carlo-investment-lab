@@ -9,6 +9,19 @@ import historical_analysis as ha
 
 
 class HistoricalAnalysisTests(unittest.TestCase):
+    def test_contribution_variants_preserve_unitized_risk(self):
+        sample = np.full((10, 36, 3), -0.01)
+        no_deposits = ha.simulate_wealth(sample, weekly=0)
+        deposits = ha.simulate_wealth(sample, weekly=200)
+        np.testing.assert_array_equal(no_deposits['unit'], deposits['unit'])
+        np.testing.assert_array_equal(no_deposits['drawdown'], deposits['drawdown'])
+        expected = ha.START_CASH
+        for _ in range(36):
+            expected = expected * .99 + 200 * 52 / 12
+        np.testing.assert_allclose(deposits['wealth'][-1], expected)
+        rows = ha.summarize(deposits, 'test', dict.fromkeys(ha.TICKERS, .1), weekly=200)
+        self.assertEqual(rows[-1]['contributed_usd'], ha.START_CASH + 200 * 52 * 3)
+
     def test_daily_input_uses_last_price_and_excludes_partial_month(self):
         dates = pd.bdate_range("2022-01-01", "2026-11-06")
         prices = pd.DataFrame(np.arange(len(dates))[:, None] + np.ones((len(dates), 3)),

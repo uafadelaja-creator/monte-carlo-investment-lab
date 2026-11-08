@@ -165,6 +165,7 @@ def sample_joint_returns(
 def simulate_wealth(
     sampled_returns: np.ndarray,
     shock: np.ndarray | None = None,
+    weekly: float = WEEKLY_DEPOSIT,
 ) -> dict[str, np.ndarray]:
     paths, months, arms = sampled_returns.shape
     wealth = np.full((paths, arms), START_CASH)
@@ -182,7 +183,7 @@ def simulate_wealth(
             gross_return = gross_return * (1 + shocks)
         if (gross_return <= 0).any():
             raise RuntimeError("A simulated gross return is not positive")
-        wealth = wealth * gross_return + MONTHLY_DEPOSIT
+        wealth = wealth * gross_return + weekly * 52.0 / 12.0
         unit_nav *= gross_return
         unit_peak = np.maximum(unit_peak, unit_nav)
         maximum_drawdown = np.maximum(maximum_drawdown, 1 - unit_nav / unit_peak)
@@ -200,11 +201,12 @@ def summarize(
     simulation: dict[str, np.ndarray],
     scenario: str,
     annual_volatility: dict[str, float],
+    weekly: float = WEEKLY_DEPOSIT,
 ) -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
     for months in HORIZONS:
         index = months - 1
-        contributed = START_CASH + MONTHLY_DEPOSIT * months
+        contributed = START_CASH + weekly * 52.0 / 12.0 * months
         wealth = simulation["wealth"][index]
         units = simulation["unit"][index]
         drawdowns = simulation["drawdown"][index]
@@ -483,6 +485,24 @@ def main() -> None:
         "shock": stress_rows,
         "block_sensitivity_36m": block_rows,
     }
+    normalized = complete_prices / complete_prices.iloc[0]
+    dashboard["observed"] = {
+        "dates": complete_prices.index.strftime("%Y-%m").tolist(),
+        "growth": normalized.round(8).to_dict(orient="list"),
+        "drawdown": (normalized / normalized.cummax() - 1).round(8).to_dict(orient="list"),
+    }
+    dashboard["views"] = {}
+    for weekly in (0, 50, 100, 200):
+        dashboard["views"][str(weekly)] = {}
+        for label, shock in (("baseline", None), ("shock", SHOCKS)):
+            view = simulate_wealth(sampled, shock, weekly=weekly)
+            percentiles = np.percentile(view["wealth"], [5, 50, 95], axis=1)
+            dashboard["views"][str(weekly)][label] = {
+                "summary": summarize(view, label, volatility, weekly=weekly),
+                "fan": {ticker: {key: percentiles[k, :, arm].round(6).tolist()
+                                  for k, key in enumerate(("p05", "median", "p95"))}
+                        for arm, ticker in enumerate(TICKERS)},
+            }
     (args.outdir / "historical_dashboard_data.json").write_text(
         json.dumps(dashboard, indent=2, allow_nan=False) + "\n"
     )

@@ -4,6 +4,25 @@ A reproducible investment-risk research project comparing a speculative-technolo
 
 **Live project:** https://uafadelaja-creator.github.io/monte-carlo-investment-lab/
 
+## Historical dashboard · 7 November 2026
+
+The public website now uses the uploaded historical dataset exclusively. The
+**Historical performance** tab shows actual month-end adjusted-price performance.
+The **Monte Carlo simulation** tab resamples that history into hypothetical paths.
+No old hand-set return/volatility assumptions feed either page.
+
+Both pages share navigation, typography, colors, and responsive layouts. The
+Research & data page explains the model, data provenance, fund definitions,
+correlations, and sampling sensitivity. The overview supports all six horizons,
+$0/$50/$100/$200 weekly contribution equivalents, and baseline or hypothetical
+initial-shock scenarios, with downloadable comparisons.
+
+Run `historical_analysis.py` using the command below, then
+`python render_historical_results.py` to regenerate both pages. Shared assets
+live in `assets/`. All displayed metrics, normalized historical chart series,
+and simulated percentile curves come from `results/historical_dashboard_data.json`.
+
+
 ## Current research release: v0.7 · 1 November 2026
 
 The repository now keeps three layers deliberately separate:
@@ -70,7 +89,7 @@ This refresh runs **50,000 joint moving-block-bootstrap paths**, with a three-mo
 primary block, one- and six-month sensitivity, and seed `20261011`. Each ETF is a
 separate arm starting with $500 and receiving $100/week represented as $433.33 at
 month-end. These conditional simulations are not out-of-sample trading evidence.
-The original illustrative engine remains separate in `simulate.py` and `index.html`.
+The original illustrative engine remains archived in `simulate.py`; it no longer powers the website.
 
 ### What the ETFs represent
 
@@ -133,7 +152,7 @@ copying numbers into the historical page. Daily prices become month-end observat
 monthly drawdowns do not measure intramonth losses. Fund expenses are embedded in
 observed ETF history; no extra expense ratio is deducted.
 
-Run the parametric Student-t comparison separately:
+Optional archived parametric Student-t comparison (not used by the website):
 
 ```bash
 python simulate.py --paths 50000 --seed 20261004 --outdir results
@@ -195,7 +214,8 @@ The historical engine resamples contiguous three-month blocks of **joint** ARKK/
 
 ## Outputs
 
-- `historical_results.html`: standalone GitHub Pages-ready historical results.
+- `index.html`: historical-performance and historical-bootstrap interactive dashboard.
+- `historical_results.html`: matching methodology, data provenance, and sensitivity page.
 - `results/historical_drawdown.svg`: lightweight public drawdown comparison.
 - `results/historical_simulation_summary.csv`: every requested horizon and outcome statistic.
 - `results/historical_risk_metrics.csv`: empirical risk statistics.
@@ -205,7 +225,7 @@ The historical engine resamples contiguous three-month blocks of **joint** ARKK/
 - `results/historical_metadata.json`: source window, seed, hash, assumptions, and limitations.
 - `results/historical_metadata.json`: includes the original input hash and source window.
 - `RUN_2026-10-11.md`: archived initial historical research report.
-- `render_historical_results.py`: regenerate the historical page from aggregate JSON.
+- `render_historical_results.py`: regenerate both pages from aggregate JSON and shared layout.
 - `CHANGELOG.md`: version history and methodological upgrades.
 - `STAT_ARB_GUIDE.md`: frozen pair protocol, data caveats, and roadmap.
 - `download_prices.py`: local-only exploratory Yahoo/yfinance data fetch with hashes.

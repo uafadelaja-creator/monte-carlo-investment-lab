@@ -1,3 +1,14 @@
+## 2026-11-07 · Unified historical dashboard
+
+- Replaced the main dashboard's embedded illustrative data with the uploaded
+  historical dataset. Default view shows observed normalized performance.
+- Added historical bootstrap percentile curves and all contribution controls
+  using joint sampled returns, with a clearly labeled hypothetical shock option.
+- Unified both pages with shared CSS, navigation, typography, and ETF definitions.
+- Added historical chart inspection, accessible tabs, comparison CSV downloads,
+  and a research page covering provenance, correlation, and block sensitivity.
+- Added regression coverage for contribution variants and unitized risk accounting.
+
 ## 2026-11-07 · Historical ETF refresh (engine v0.4.1)
 
 - Ingested the user-provided daily adjusted-price CSV locally, with input hash,
