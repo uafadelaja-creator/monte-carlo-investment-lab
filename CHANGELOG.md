@@ -22,6 +22,18 @@
 
 # Changelog
 
+## v0.8 · 8 November 2026
+
+- Extended the frozen pairs holdout through 6 November without changing
+  hypotheses or trading parameters; five new sessions produced no entries.
+- Added Monte Carlo standard errors and Wilson 95% intervals for profit/loss
+  frequencies at every 1/3/6/12/24/36-month horizon.
+- Continued the append-only aggregate and forward ledgers; all three pairs
+  remained flat, with no pending execution audit.
+- Reproduced aggregate outputs byte-for-byte in a second 50,000-path run,
+  confirmed ledger idempotency, and expanded the suite to 17 tests.
+- Preserved the assumption-driven simulator and historical ETF dashboard unchanged.
+
 ## v0.7 · 1 November 2026
 
 - Extended the frozen pair holdout through 30 October; five new sessions produced

@@ -5,13 +5,13 @@
     "KO",
     "PEP"
   ],
-  "market_data": "data/stat_arb_2026-11-01/adjusted_close.csv",
+  "market_data": "data/stat_arb_2026-11-08/adjusted_close.csv",
   "download_manifest": {
     "provider": "Yahoo Finance through yfinance (unofficial; exploratory research only)",
     "source_url": "https://ranaroussi.github.io/yfinance/",
-    "downloaded_utc": "2026-11-02T00:52:24.828619+00:00",
+    "downloaded_utc": "2026-11-09T00:40:39.613916+00:00",
     "requested_start": "2015-01-01",
-    "requested_end_exclusive": "2026-11-01",
+    "requested_end_exclusive": "2026-11-09",
     "tickers": [
       "V",
       "MA",
@@ -26,9 +26,9 @@
     ],
     "model_input": "adjusted_close.csv",
     "price_basis": "Adjusted Close approximates total return after vendor corporate-action adjustments; it is not a historical executable fill price. raw_close.csv is audit context only.",
-    "rows": 2975,
+    "rows": 2980,
     "earliest_date": "2015-01-02",
-    "latest_date": "2026-10-30",
+    "latest_date": "2026-11-06",
     "missing_per_ticker": {
       "V": 0,
       "MA": 0,
@@ -42,12 +42,12 @@
       "XLE": 0
     },
     "file_sha256": {
-      "adjusted_close.csv": "4b1e3b76bdb945c7f71a583910940f94b8e3e35f086da1d85a2581f6201d775d",
-      "raw_close.csv": "2e5d76b4f5b3f4ad80618524bcd31082d0451ed202a5933b847068c32e6305fd",
-      "raw_open.csv": "fae50ab26c9681fb92efad73028ad440fe9e1e72b412be83e809a11a9b3173e8",
-      "raw_high.csv": "15899a81051bda47eea11a7c85ba533630f82d9ca38ffc8d8a9b453636aca156",
-      "raw_low.csv": "104e035f9caf5979b23f988871699059dc3f43b03ccd370333815bca9dac43a9",
-      "volume.csv": "f02fc85216765fdc6e80544c0b6aace86d44f6d0eff0dd74d7724f2e53a05f3b"
+      "adjusted_close.csv": "4ccd6923df8d4cad0dea82d87e7180e0ce98f432a0bc000aee66921414055ec9",
+      "raw_close.csv": "ae09300a4d127a8e3a44c2f8fdb7e6d6856c2fd3a89087055c4e3a59e0222556",
+      "raw_open.csv": "244c0b6b9fa89da180289c78136ae2a1fa0cfae8b50185246dca59f405a09d2b",
+      "raw_high.csv": "000e7fb1a224263b6b9462d5d99e3a56670cccd35a2e10038a279d7f046fae37",
+      "raw_low.csv": "a82d4b081ab0a1806454f7bd47e210a9277959aaa421ee064cd1628bb87255c6",
+      "volume.csv": "4e6293681b788ce3a7afbfaf873a24fb163bc84c624ef5cdc0bc12951e72a121"
     },
     "warnings": [],
     "limitations": [
@@ -61,7 +61,7 @@
     ]
   },
   "test_start": "2023-01-03",
-  "last_test_session": "2026-10-30",
+  "last_test_session": "2026-11-06",
   "settings": {
     "formation_days": 252,
     "z_lookback": 60,
@@ -76,7 +76,7 @@
     "price_basis": "vendor-adjusted close; total-return approximation, not executable quote"
   },
   "strategy_net": {
-    "n_sessions": 961,
+    "n_sessions": 966,
     "cumulative_return": 0.0,
     "cagr": 0.0,
     "annualized_volatility": 0.0,
@@ -92,34 +92,34 @@
   },
   "benchmarks": {
     "SPY": {
-      "n_sessions": 961,
-      "cumulative_return": 1.0717847549987853,
-      "cagr": 0.21047007034138043,
-      "annualized_volatility": 0.14855908788514624,
-      "max_drawdown": -0.18755234161466705,
-      "sharpe_rf_0": 1.3600757907237795,
-      "sortino_rf_0": 1.8768686281433822,
-      "profitable_day_fraction": 0.5598335067637877
+      "n_sessions": 966,
+      "cumulative_return": 1.015776343866873,
+      "cagr": 0.20065916957628827,
+      "annualized_volatility": 0.15018924426629576,
+      "max_drawdown": -0.18755229084681824,
+      "sharpe_rf_0": 1.2927577658704166,
+      "sortino_rf_0": 1.7453522863776227,
+      "profitable_day_fraction": 0.5600414078674948
     },
     "XLP": {
-      "n_sessions": 961,
-      "cumulative_return": 0.3255049416663116,
-      "cagr": 0.07669247022868286,
-      "annualized_volatility": 0.1279862481910033,
-      "max_drawdown": -0.13365511278421494,
-      "sharpe_rf_0": 0.6413369172498261,
-      "sortino_rf_0": 1.0380488393603895,
-      "profitable_day_fraction": 0.5098855359001041
+      "n_sessions": 966,
+      "cumulative_return": 0.3352882634082577,
+      "cagr": 0.078347420846548,
+      "annualized_volatility": 0.12970671723593877,
+      "max_drawdown": -0.13365501898678644,
+      "sharpe_rf_0": 0.6463639361490965,
+      "sortino_rf_0": 1.0518647727925463,
+      "profitable_day_fraction": 0.5093167701863354
     }
   },
   "risk_adjusted_comparisons": {
     "SPY": {
-      "information_ratio_rf_0": -1.3600757907237795,
+      "information_ratio_rf_0": -1.2927577658704164,
       "volatility_ratio_strategy_to_benchmark": 0.0,
       "note": "Descriptive risk adjustment only; neither series is leverage-matched."
     },
     "XLP": {
-      "information_ratio_rf_0": -0.641336917249826,
+      "information_ratio_rf_0": -0.6463639361490964,
       "volatility_ratio_strategy_to_benchmark": 0.0,
       "note": "Descriptive risk adjustment only; neither series is leverage-matched."
     }
@@ -147,7 +147,13 @@
       "p75_return": 0.0,
       "p95_return": 0.0,
       "probability_profitable": 0.0,
+      "probability_profitable_mc_se": 0.0,
+      "probability_profitable_mc_ci95_low": 0.0,
+      "probability_profitable_mc_ci95_high": 7.682327414500052e-05,
       "probability_loss": 0.0,
+      "probability_loss_mc_se": 0.0,
+      "probability_loss_mc_ci95_low": 0.0,
+      "probability_loss_mc_ci95_high": 7.682327414500052e-05,
       "median_max_drawdown": 0.0,
       "p95_max_drawdown": 0.0
     },
@@ -164,7 +170,13 @@
       "p75_return": 0.0,
       "p95_return": 0.0,
       "probability_profitable": 0.0,
+      "probability_profitable_mc_se": 0.0,
+      "probability_profitable_mc_ci95_low": 0.0,
+      "probability_profitable_mc_ci95_high": 7.682327414500052e-05,
       "probability_loss": 0.0,
+      "probability_loss_mc_se": 0.0,
+      "probability_loss_mc_ci95_low": 0.0,
+      "probability_loss_mc_ci95_high": 7.682327414500052e-05,
       "median_max_drawdown": 0.0,
       "p95_max_drawdown": 0.0
     },
@@ -181,7 +193,13 @@
       "p75_return": 0.0,
       "p95_return": 0.0,
       "probability_profitable": 0.0,
+      "probability_profitable_mc_se": 0.0,
+      "probability_profitable_mc_ci95_low": 0.0,
+      "probability_profitable_mc_ci95_high": 7.682327414500052e-05,
       "probability_loss": 0.0,
+      "probability_loss_mc_se": 0.0,
+      "probability_loss_mc_ci95_low": 0.0,
+      "probability_loss_mc_ci95_high": 7.682327414500052e-05,
       "median_max_drawdown": 0.0,
       "p95_max_drawdown": 0.0
     },
@@ -198,7 +216,13 @@
       "p75_return": 0.0,
       "p95_return": 0.0,
       "probability_profitable": 0.0,
+      "probability_profitable_mc_se": 0.0,
+      "probability_profitable_mc_ci95_low": 0.0,
+      "probability_profitable_mc_ci95_high": 7.682327414500052e-05,
       "probability_loss": 0.0,
+      "probability_loss_mc_se": 0.0,
+      "probability_loss_mc_ci95_low": 0.0,
+      "probability_loss_mc_ci95_high": 7.682327414500052e-05,
       "median_max_drawdown": 0.0,
       "p95_max_drawdown": 0.0
     },
@@ -215,7 +239,13 @@
       "p75_return": 0.0,
       "p95_return": 0.0,
       "probability_profitable": 0.0,
+      "probability_profitable_mc_se": 0.0,
+      "probability_profitable_mc_ci95_low": 0.0,
+      "probability_profitable_mc_ci95_high": 7.682327414500052e-05,
       "probability_loss": 0.0,
+      "probability_loss_mc_se": 0.0,
+      "probability_loss_mc_ci95_low": 0.0,
+      "probability_loss_mc_ci95_high": 7.682327414500052e-05,
       "median_max_drawdown": 0.0,
       "p95_max_drawdown": 0.0
     },
@@ -232,7 +262,13 @@
       "p75_return": 0.0,
       "p95_return": 0.0,
       "probability_profitable": 0.0,
+      "probability_profitable_mc_se": 0.0,
+      "probability_profitable_mc_ci95_low": 0.0,
+      "probability_profitable_mc_ci95_high": 7.682327414500052e-05,
       "probability_loss": 0.0,
+      "probability_loss_mc_se": 0.0,
+      "probability_loss_mc_ci95_low": 0.0,
+      "probability_loss_mc_ci95_high": 7.682327414500052e-05,
       "median_max_drawdown": 0.0,
       "p95_max_drawdown": 0.0
     }
@@ -245,6 +281,7 @@
     "Borrow availability, margin calls, taxes, market impact, and intraday gaps are omitted.",
     "Rolling cointegration tests do not prove persistent mean reversion.",
     "No model was selected by ranking these test-period results.",
-    "Block bootstrap is conditional on this observed test sample and cannot create unseen regimes."
+    "Block bootstrap is conditional on this observed test sample and cannot create unseen regimes.",
+    "Monte Carlo confidence intervals measure finite-path sampling noise only, not model or data uncertainty."
   ]
 }

@@ -92,6 +92,12 @@ def run(args: argparse.Namespace) -> None:
                     "probability_profitable"
                 ],
                 "one_year_bootstrap_probability_loss": one_year["probability_loss"],
+                "one_year_probability_loss_mc_ci95_low": one_year[
+                    "probability_loss_mc_ci95_low"
+                ],
+                "one_year_probability_loss_mc_ci95_high": one_year[
+                    "probability_loss_mc_ci95_high"
+                ],
                 "one_year_bootstrap_median_drawdown": one_year["median_max_drawdown"],
                 "three_year_bootstrap_median_return": three_year["median_return"],
                 "three_year_bootstrap_probability_profitable": three_year[
@@ -99,6 +105,12 @@ def run(args: argparse.Namespace) -> None:
                 ],
                 "three_year_bootstrap_probability_loss": three_year[
                     "probability_loss"
+                ],
+                "three_year_probability_loss_mc_ci95_low": three_year[
+                    "probability_loss_mc_ci95_low"
+                ],
+                "three_year_probability_loss_mc_ci95_high": three_year[
+                    "probability_loss_mc_ci95_high"
                 ],
                 "three_year_bootstrap_median_drawdown": three_year[
                     "median_max_drawdown"
@@ -146,20 +158,26 @@ def run(args: argparse.Namespace) -> None:
         "These are fixed hypothesis tests, not ranked trade recommendations.",
         "Adjusted closes are total-return approximations rather than executable prices.",
         "",
-        "| Pair | Net cumulative | CAGR | Volatility | Max drawdown | Entries | 12m P(loss) | 36m P(loss) |",
+        "| Pair | Net cumulative | CAGR | Volatility | Max drawdown | Entries | 12m P(loss), MC 95% CI | 36m P(loss), MC 95% CI |",
         "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in summary_rows:
         lines.append(
             "| {pair} | {net_cumulative_return:.2%} | {net_cagr:.2%} | "
             "{annualized_volatility:.2%} | {max_drawdown:.2%} | {entries} | "
-            "{one_year_bootstrap_probability_loss:.1%} | "
-            "{three_year_bootstrap_probability_loss:.1%} |".format(**row)
+            "{one_year_bootstrap_probability_loss:.2%} "
+            "[{one_year_probability_loss_mc_ci95_low:.2%}, "
+            "{one_year_probability_loss_mc_ci95_high:.2%}] | "
+            "{three_year_bootstrap_probability_loss:.2%} "
+            "[{three_year_probability_loss_mc_ci95_low:.2%}, "
+            "{three_year_probability_loss_mc_ci95_high:.2%}] |".format(**row)
         )
     lines += [
         "",
         "No pair is selected as a winner after observing the holdout. Statistical",
         "significance, if any, would not by itself establish implementable alpha.",
+        "The reported Monte Carlo intervals isolate finite-path sampling error;",
+        "they do not include model, parameter, historical-sample, or regime uncertainty.",
     ]
     (args.outdir / "STAT_ARB_RESULTS.md").write_text(
         "\n".join(lines) + "\n", encoding="utf-8"

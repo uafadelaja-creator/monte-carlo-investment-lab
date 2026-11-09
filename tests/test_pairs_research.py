@@ -115,7 +115,27 @@ class PairsResearchTests(unittest.TestCase):
             self.assertLessEqual(row["p75_return"], row["p95_return"])
             self.assertGreaterEqual(row["probability_loss"], 0)
             self.assertLessEqual(row["probability_loss"], 1)
+            self.assertLessEqual(
+                row["probability_loss_mc_ci95_low"], row["probability_loss"]
+            )
+            self.assertLessEqual(
+                row["probability_loss"], row["probability_loss_mc_ci95_high"]
+            )
+            self.assertGreaterEqual(row["probability_loss_mc_se"], 0)
             self.assertLessEqual(row["median_max_drawdown"], row["p95_max_drawdown"])
+
+    def test_binomial_mc_uncertainty_handles_boundaries(self):
+        no_events = pr.binomial_mc_uncertainty(0, 50_000)
+        all_events = pr.binomial_mc_uncertainty(50_000, 50_000)
+        middle = pr.binomial_mc_uncertainty(25_000, 50_000)
+        self.assertEqual(no_events["mc_standard_error"], 0.0)
+        self.assertEqual(all_events["mc_standard_error"], 0.0)
+        self.assertEqual(no_events["mc_ci95_low"], 0.0)
+        self.assertEqual(all_events["mc_ci95_high"], 1.0)
+        self.assertLess(middle["mc_ci95_low"], 0.5)
+        self.assertGreater(middle["mc_ci95_high"], 0.5)
+        with self.assertRaises(ValueError):
+            pr.binomial_mc_uncertainty(2, 1)
 
 
 if __name__ == "__main__":

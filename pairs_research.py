@@ -283,6 +283,37 @@ def factor_attribution(
     }
 
 
+def binomial_mc_uncertainty(
+    event_count: int, paths: int, z: float = 1.959963984540054
+) -> dict[str, float]:
+    """Return Monte Carlo standard error and a Wilson interval for a frequency.
+
+    This quantifies finite-simulation noise only. It does not cover parameter,
+    model, data-vendor, regime, or historical-sample uncertainty.
+    """
+    if paths < 1 or not 0 <= event_count <= paths:
+        raise ValueError("Require 0 <= event_count <= paths and paths >= 1.")
+    probability = event_count / paths
+    standard_error = math.sqrt(probability * (1 - probability) / paths)
+    z2 = z * z
+    denominator = 1 + z2 / paths
+    center = (probability + z2 / (2 * paths)) / denominator
+    radius = z * math.sqrt(
+        probability * (1 - probability) / paths + z2 / (4 * paths * paths)
+    ) / denominator
+    low = min(probability, max(0.0, center - radius))
+    high = max(probability, min(1.0, center + radius))
+    if event_count == 0:
+        low = 0.0
+    if event_count == paths:
+        high = 1.0
+    return {
+        "mc_standard_error": float(standard_error),
+        "mc_ci95_low": float(low),
+        "mc_ci95_high": float(high),
+    }
+
+
 def block_bootstrap(
     returns: pd.Series,
     paths: int,
@@ -322,6 +353,10 @@ def block_bootstrap(
         p05, p25, median, p75, p95 = np.percentile(
             terminal, [5, 25, 50, 75, 95]
         )
+        profitable_count = int(np.count_nonzero(terminal > 0))
+        loss_count = int(np.count_nonzero(terminal < 0))
+        profitable_uncertainty = binomial_mc_uncertainty(profitable_count, paths)
+        loss_uncertainty = binomial_mc_uncertainty(loss_count, paths)
         rows.append(
             {
                 "horizon_months": horizon_months,
@@ -335,8 +370,20 @@ def block_bootstrap(
                 "median_return": float(median),
                 "p75_return": float(p75),
                 "p95_return": float(p95),
-                "probability_profitable": float(np.mean(terminal > 0)),
-                "probability_loss": float(np.mean(terminal < 0)),
+                "probability_profitable": float(profitable_count / paths),
+                "probability_profitable_mc_se": profitable_uncertainty[
+                    "mc_standard_error"
+                ],
+                "probability_profitable_mc_ci95_low": profitable_uncertainty[
+                    "mc_ci95_low"
+                ],
+                "probability_profitable_mc_ci95_high": profitable_uncertainty[
+                    "mc_ci95_high"
+                ],
+                "probability_loss": float(loss_count / paths),
+                "probability_loss_mc_se": loss_uncertainty["mc_standard_error"],
+                "probability_loss_mc_ci95_low": loss_uncertainty["mc_ci95_low"],
+                "probability_loss_mc_ci95_high": loss_uncertainty["mc_ci95_high"],
                 "median_max_drawdown": float(np.median(maximum_drawdown)),
                 "p95_max_drawdown": float(np.percentile(maximum_drawdown, 95)),
             }
@@ -436,6 +483,7 @@ def run(args: argparse.Namespace) -> dict:
             "Rolling cointegration tests do not prove persistent mean reversion.",
             "No model was selected by ranking these test-period results.",
             "Block bootstrap is conditional on this observed test sample and cannot create unseen regimes.",
+            "Monte Carlo confidence intervals measure finite-path sampling noise only, not model or data uncertainty.",
         ],
     }
 
