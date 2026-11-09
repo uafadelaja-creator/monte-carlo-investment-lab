@@ -1,4 +1,4 @@
-# Historical data + statistical-arbitrage research (v0.7)
+# Historical data + statistical-arbitrage research (v0.8)
 
 This empirical module is separate from the original assumption-driven `simulate.py`.
 It tests predeclared pairs and does not generate live trade alerts or assert alpha.
@@ -98,6 +98,9 @@ distributions for 1/3/6/12/24/36 months. The aggregate runner also records 5/10/
 bps cost sensitivity and 126/252/504-session formation sensitivity.
 Each pair report also includes a descriptive Fama-French three-factor regression
 when the official factor file is present; its alpha p-value is not treated as proof.
+Every bootstrap frequency now includes a Wilson 95% interval for finite Monte Carlo
+sampling error. That interval does not cover model, parameter, vendor, historical-
+sample, or regime uncertainty and must not be presented as a predictive interval.
 
 No capital contributions are modeled in this self-financing long/short module.
 That differs from the contribution-aware ETF portfolio Monte Carlo.
@@ -119,7 +122,7 @@ executable fill. Bid/ask quotes and borrow inventory remain unavailable.
   unofficial exploratory source; availability, corrections, and permitted uses
   can change.
 - [Kenneth French's official data library](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html)
-  is the intended source for a later factor-model extension.
+  supplies the daily factors used for descriptive HAC-robust attribution.
 - [SEC EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces)
   will support future point-in-time classifications using filing availability dates.
 - Delisting-inclusive CRSP data would materially improve the universe study if
@@ -171,6 +174,21 @@ was observed, no next-session execution audit is pending.
 The unchanged historical results remain −0.005% net for V/MA, 0% inactive for
 KO/PEP, and −2.29% for XOM/CVX. The 36-month moving-block loss probabilities are
 45.2%, 0.0% inactive, and 79.9%. This remains an underpowered negative result.
+
+## Sequential update, 8 November 2026
+
+Five additional completed sessions extended the sample through 2026-11-06.
+No pair generated a new entry, and all three prospective states remained flat.
+V/MA's current Z-score was 1.18 with a 0.814 trailing cointegration p-value;
+XOM/CVX's was −0.99 with a 0.071 p-value; KO/PEP again had no valid estimate.
+No next-session execution audit is pending.
+
+The historical holdout remains sparse: V/MA has two entries and −0.005% net,
+KO/PEP has no entries, and XOM/CVX has one entry and −2.29% net. At 50,000
+paths, 36-month loss frequencies were 45.27% (Monte Carlo 95% interval
+44.83%–45.71%) and 79.81% (79.45%–80.16%) for V/MA and XOM/CVX. KO/PEP's
+0% frequency still denotes inactivity. The new intervals quantify simulation
+noise only; broader research uncertainty is much larger.
 
 ## Roadmap
 

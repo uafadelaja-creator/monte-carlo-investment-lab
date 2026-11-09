@@ -8,9 +8,9 @@ historical signals as if they had been observed in real time.
 
 | Pair | Signal date | Event | State | Z-score | Coint. p | Execution audit |
 |---|---|---|---|---:|---:|---|
-| KO/PEP | 2026-10-30 | INITIAL_FLAT | flat | n/a | n/a | not_applicable |
-| V/MA | 2026-10-30 | INITIAL_FLAT | flat | 1.08 | 0.814 | not_applicable |
-| XOM/CVX | 2026-10-30 | INITIAL_FLAT | flat | -0.60 | 0.071 | not_applicable |
+| KO/PEP | 2026-11-06 | FLAT | flat | n/a | n/a | not_applicable |
+| V/MA | 2026-11-06 | FLAT | flat | 1.18 | 0.814 | not_applicable |
+| XOM/CVX | 2026-11-06 | FLAT | flat | -0.99 | 0.071 | not_applicable |
 
 Resolved prospective entries: **0**.
 

@@ -5,13 +5,13 @@
     "XOM",
     "CVX"
   ],
-  "market_data": "data/stat_arb_2026-11-01/adjusted_close.csv",
+  "market_data": "data/stat_arb_2026-11-08/adjusted_close.csv",
   "download_manifest": {
     "provider": "Yahoo Finance through yfinance (unofficial; exploratory research only)",
     "source_url": "https://ranaroussi.github.io/yfinance/",
-    "downloaded_utc": "2026-11-02T00:52:24.828619+00:00",
+    "downloaded_utc": "2026-11-09T00:40:39.613916+00:00",
     "requested_start": "2015-01-01",
-    "requested_end_exclusive": "2026-11-01",
+    "requested_end_exclusive": "2026-11-09",
     "tickers": [
       "V",
       "MA",
@@ -26,9 +26,9 @@
     ],
     "model_input": "adjusted_close.csv",
     "price_basis": "Adjusted Close approximates total return after vendor corporate-action adjustments; it is not a historical executable fill price. raw_close.csv is audit context only.",
-    "rows": 2975,
+    "rows": 2980,
     "earliest_date": "2015-01-02",
-    "latest_date": "2026-10-30",
+    "latest_date": "2026-11-06",
     "missing_per_ticker": {
       "V": 0,
       "MA": 0,
@@ -42,12 +42,12 @@
       "XLE": 0
     },
     "file_sha256": {
-      "adjusted_close.csv": "4b1e3b76bdb945c7f71a583910940f94b8e3e35f086da1d85a2581f6201d775d",
-      "raw_close.csv": "2e5d76b4f5b3f4ad80618524bcd31082d0451ed202a5933b847068c32e6305fd",
-      "raw_open.csv": "fae50ab26c9681fb92efad73028ad440fe9e1e72b412be83e809a11a9b3173e8",
-      "raw_high.csv": "15899a81051bda47eea11a7c85ba533630f82d9ca38ffc8d8a9b453636aca156",
-      "raw_low.csv": "104e035f9caf5979b23f988871699059dc3f43b03ccd370333815bca9dac43a9",
-      "volume.csv": "f02fc85216765fdc6e80544c0b6aace86d44f6d0eff0dd74d7724f2e53a05f3b"
+      "adjusted_close.csv": "4ccd6923df8d4cad0dea82d87e7180e0ce98f432a0bc000aee66921414055ec9",
+      "raw_close.csv": "ae09300a4d127a8e3a44c2f8fdb7e6d6856c2fd3a89087055c4e3a59e0222556",
+      "raw_open.csv": "244c0b6b9fa89da180289c78136ae2a1fa0cfae8b50185246dca59f405a09d2b",
+      "raw_high.csv": "000e7fb1a224263b6b9462d5d99e3a56670cccd35a2e10038a279d7f046fae37",
+      "raw_low.csv": "a82d4b081ab0a1806454f7bd47e210a9277959aaa421ee064cd1628bb87255c6",
+      "volume.csv": "4e6293681b788ce3a7afbfaf873a24fb163bc84c624ef5cdc0bc12951e72a121"
     },
     "warnings": [],
     "limitations": [
@@ -61,7 +61,7 @@
     ]
   },
   "test_start": "2023-01-03",
-  "last_test_session": "2026-10-30",
+  "last_test_session": "2026-11-06",
   "settings": {
     "formation_days": 252,
     "z_lookback": 60,
@@ -76,14 +76,14 @@
     "price_basis": "vendor-adjusted close; total-return approximation, not executable quote"
   },
   "strategy_net": {
-    "n_sessions": 961,
-    "cumulative_return": -0.022870358773188992,
-    "cagr": -0.006048499007512476,
-    "annualized_volatility": 0.011562037825378724,
-    "max_drawdown": -0.022995748608310662,
-    "sharpe_rf_0": -0.518912535591629,
-    "sortino_rf_0": -0.08859836751778828,
-    "profitable_day_fraction": 0.009365244536940686
+    "n_sessions": 966,
+    "cumulative_return": -0.0228703989355592,
+    "cagr": -0.006017297116050702,
+    "annualized_volatility": 0.011532080121664125,
+    "max_drawdown": -0.022995789509458908,
+    "sharpe_rf_0": -0.5175686186814425,
+    "sortino_rf_0": -0.08814016409580609,
+    "profitable_day_fraction": 0.009316770186335404
   },
   "flat_cash": {
     "cumulative_return": 0.0,
@@ -92,55 +92,55 @@
   },
   "benchmarks": {
     "SPY": {
-      "n_sessions": 961,
-      "cumulative_return": 1.0717847549987853,
-      "cagr": 0.21047007034138043,
-      "annualized_volatility": 0.14855908788514624,
-      "max_drawdown": -0.18755234161466705,
-      "sharpe_rf_0": 1.3600757907237795,
-      "sortino_rf_0": 1.8768686281433822,
-      "profitable_day_fraction": 0.5598335067637877
+      "n_sessions": 966,
+      "cumulative_return": 1.015776343866873,
+      "cagr": 0.20065916957628827,
+      "annualized_volatility": 0.15018924426629576,
+      "max_drawdown": -0.18755229084681824,
+      "sharpe_rf_0": 1.2927577658704166,
+      "sortino_rf_0": 1.7453522863776227,
+      "profitable_day_fraction": 0.5600414078674948
     },
     "XLE": {
-      "n_sessions": 961,
-      "cumulative_return": 0.8072435967079084,
-      "cagr": 0.16787584874559625,
-      "annualized_volatility": 0.2219690114232456,
-      "max_drawdown": -0.20137289051229024,
-      "sharpe_rf_0": 0.8107955938323582,
-      "sortino_rf_0": 1.1011447926770783,
-      "profitable_day_fraction": 0.5556711758584808
+      "n_sessions": 966,
+      "cumulative_return": 0.5904362021300502,
+      "cagr": 0.12867643367175163,
+      "annualized_volatility": 0.22428314723442933,
+      "max_drawdown": -0.2013728071572115,
+      "sharpe_rf_0": 0.6524863658565992,
+      "sortino_rf_0": 0.8757044375731572,
+      "profitable_day_fraction": 0.5527950310559007
     }
   },
   "risk_adjusted_comparisons": {
     "SPY": {
-      "information_ratio_rf_0": -1.3982308734295847,
-      "volatility_ratio_strategy_to_benchmark": 0.0778278730030811,
+      "information_ratio_rf_0": -1.3304215750467856,
+      "volatility_ratio_strategy_to_benchmark": 0.07678366169295693,
       "note": "Descriptive risk adjustment only; neither series is leverage-matched."
     },
     "XLE": {
-      "information_ratio_rf_0": -0.8340163974696068,
-      "volatility_ratio_strategy_to_benchmark": 0.05208852240789813,
+      "information_ratio_rf_0": -0.6760793179960145,
+      "volatility_ratio_strategy_to_benchmark": 0.0514175062364822,
       "note": "Descriptive risk adjustment only; neither series is leverage-matched."
     }
   },
   "fama_french_attribution": {
     "status": "descriptive_only",
     "n_sessions": 939,
-    "annualized_alpha_zero_cash": -0.006783561760634382,
-    "alpha_hac_tstat": -1.1762673491366404,
-    "alpha_hac_pvalue": 0.2394880588676751,
-    "market_beta": 0.0020320084625791357,
-    "smb_beta": -0.005810177524711104,
-    "hml_beta": -0.0033951252083566853,
+    "annualized_alpha_zero_cash": -0.006783575908113588,
+    "alpha_hac_tstat": -1.1762688426805452,
+    "alpha_hac_pvalue": 0.23948746222860062,
+    "market_beta": 0.0020320193305503336,
+    "smb_beta": -0.00581020432983876,
+    "hml_beta": -0.0033951353210738846,
     "source": "Kenneth French daily F-F Research Factors",
     "warning": "HAC inference is exploratory and does not establish implementable alpha."
   },
   "executed_entry_count": 1,
-  "exposure_fraction": 0.02081165452653486,
+  "exposure_fraction": 0.020703933747412008,
   "total_turnover": 2.0,
   "total_modeled_turnover_cost": 0.002,
-  "total_modeled_borrow_drag": 0.001494166850266676,
+  "total_modeled_borrow_drag": 0.0014941668879652518,
   "bootstrap": [
     {
       "horizon_months": 1,
@@ -148,16 +148,22 @@
       "paths": 50000,
       "block_sessions": 20,
       "seed": 20261039,
-      "mean_return": -0.0005218795436444685,
+      "mean_return": -0.0005258016629639081,
       "p05_return": -0.0010000000000000009,
       "p25_return": 0.0,
       "median_return": 0.0,
       "p75_return": 0.0,
       "p95_return": 0.0,
-      "probability_profitable": 0.0105,
-      "probability_loss": 0.05444,
+      "probability_profitable": 0.00988,
+      "probability_profitable_mc_se": 0.00044232082474149917,
+      "probability_profitable_mc_ci95_low": 0.009049935727605011,
+      "probability_profitable_mc_ci95_high": 0.010785369518642883,
+      "probability_loss": 0.0549,
+      "probability_loss_mc_se": 0.0010186853292356772,
+      "probability_loss_mc_ci95_low": 0.052937391378471366,
+      "probability_loss_mc_ci95_high": 0.0569309967001725,
       "median_max_drawdown": 0.0,
-      "p95_max_drawdown": 0.0017226929412434977
+      "p95_max_drawdown": 0.0017226927535211045
     },
     {
       "horizon_months": 3,
@@ -165,16 +171,22 @@
       "paths": 50000,
       "block_sessions": 20,
       "seed": 20261081,
-      "mean_return": -0.0015298221821241477,
-      "p05_return": -0.013908319246567102,
+      "mean_return": -0.0015303231871551639,
+      "p05_return": -0.0141668924287216,
       "p25_return": 0.0,
       "median_return": 0.0,
       "p75_return": 0.0,
       "p95_return": 0.0,
-      "probability_profitable": 0.01028,
-      "probability_loss": 0.13208,
+      "probability_profitable": 0.01004,
+      "probability_profitable_mc_se": 0.00044585195749261887,
+      "probability_profitable_mc_ci95_low": 0.009203009804827487,
+      "probability_profitable_mc_ci95_high": 0.010952270857972683,
+      "probability_loss": 0.13212,
+      "probability_loss_mc_se": 0.0015143599677751654,
+      "probability_loss_mc_ci95_low": 0.12918015020673834,
+      "probability_loss_mc_ci95_high": 0.13511637328544657,
       "median_max_drawdown": 0.0,
-      "p95_max_drawdown": 0.021319494935015726
+      "p95_max_drawdown": 0.021319493573779602
     },
     {
       "horizon_months": 6,
@@ -182,16 +194,22 @@
       "paths": 50000,
       "block_sessions": 20,
       "seed": 20261144,
-      "mean_return": -0.003074752672513262,
-      "p05_return": -0.019560326833314927,
+      "mean_return": -0.0030793973596485624,
+      "p05_return": -0.019119718247585293,
       "p25_return": 0.0,
       "median_return": 0.0,
       "p75_return": 0.0,
       "p95_return": 0.0,
-      "probability_profitable": 0.01068,
-      "probability_loss": 0.24046,
+      "probability_profitable": 0.01108,
+      "probability_profitable_mc_se": 0.0004681289053241639,
+      "probability_profitable_mc_ci95_low": 0.010199311369300733,
+      "probability_profitable_mc_ci95_high": 0.012035809501089215,
+      "probability_loss": 0.23912,
+      "probability_loss_mc_se": 0.0019075724133044071,
+      "probability_loss_mc_ci95_low": 0.2354013583247156,
+      "probability_loss_mc_ci95_high": 0.2428787249868023,
       "median_max_drawdown": 0.0,
-      "p95_max_drawdown": 0.022995748608310773
+      "p95_max_drawdown": 0.022995789509458908
     },
     {
       "horizon_months": 12,
@@ -199,16 +217,22 @@
       "paths": 50000,
       "block_sessions": 20,
       "seed": 20261270,
-      "mean_return": -0.006128612273236606,
-      "p05_return": -0.023717352520932766,
-      "p25_return": -0.011518280950919557,
+      "mean_return": -0.006087156825187858,
+      "p05_return": -0.023757275466122607,
+      "p25_return": -0.01148440036261733,
       "median_return": 0.0,
       "p75_return": 0.0,
       "p95_return": 0.0,
-      "probability_profitable": 0.01036,
-      "probability_loss": 0.41468,
+      "probability_profitable": 0.0105,
+      "probability_profitable_mc_se": 0.0004558453685187555,
+      "probability_profitable_mc_ci95_low": 0.009643407728090952,
+      "probability_profitable_mc_ci95_high": 0.011431802257297004,
+      "probability_loss": 0.41364,
+      "probability_loss_mc_se": 0.0022024620332709486,
+      "probability_loss_mc_ci95_low": 0.40933004891342173,
+      "probability_loss_mc_ci95_high": 0.41796322000248853,
       "median_max_drawdown": 0.0,
-      "p95_max_drawdown": 0.02908717271685879
+      "p95_max_drawdown": 0.029487183572604492
     },
     {
       "horizon_months": 24,
@@ -216,16 +240,22 @@
       "paths": 50000,
       "block_sessions": 20,
       "seed": 20261522,
-      "mean_return": -0.012311373127546958,
-      "p05_return": -0.03821723910693098,
-      "p25_return": -0.020570782169405,
-      "median_return": -0.009637134486367605,
+      "mean_return": -0.01218117717321119,
+      "p05_return": -0.03804104154140233,
+      "p25_return": -0.020282297582232656,
+      "median_return": -0.009088528097142001,
       "p75_return": 0.0,
       "p95_return": 0.0,
-      "probability_profitable": 0.0114,
-      "probability_loss": 0.66172,
-      "median_max_drawdown": 0.012006091188137669,
-      "p95_max_drawdown": 0.04281164129322479
+      "probability_profitable": 0.01226,
+      "probability_profitable_mc_se": 0.0004921319416579257,
+      "probability_profitable_mc_ci95_low": 0.011332218415563733,
+      "probability_profitable_mc_ci95_high": 0.013262721151899233,
+      "probability_loss": 0.65684,
+      "probability_loss_mc_se": 0.002123210843981351,
+      "probability_loss_mc_ci95_low": 0.6526666766578855,
+      "probability_loss_mc_ci95_high": 0.6609892254174807,
+      "median_max_drawdown": 0.012006133613582382,
+      "p95_max_drawdown": 0.04281167964572252
     },
     {
       "horizon_months": 36,
@@ -233,16 +263,22 @@
       "paths": 50000,
       "block_sessions": 20,
       "seed": 20261774,
-      "mean_return": -0.01817124209299009,
-      "p05_return": -0.048309231697319946,
-      "p25_return": -0.0278331175335573,
-      "median_return": -0.015865084319671707,
-      "p75_return": -0.00444439577274125,
+      "mean_return": -0.018101162764076223,
+      "p05_return": -0.048513925797812406,
+      "p25_return": -0.027618948863505133,
+      "median_return": -0.015599203501752201,
+      "p75_return": -0.0044444396511522655,
       "p95_return": 0.0,
-      "probability_profitable": 0.0083,
-      "probability_loss": 0.7991,
-      "median_max_drawdown": 0.022715519029013698,
-      "p95_max_drawdown": 0.05310723776877005
+      "probability_profitable": 0.0084,
+      "probability_profitable_mc_se": 0.00040815291252176557,
+      "probability_profitable_mc_ci95_low": 0.007636941029986531,
+      "probability_profitable_mc_ci95_high": 0.009238591613152831,
+      "probability_loss": 0.79806,
+      "probability_loss_mc_se": 0.0017953285849671087,
+      "probability_loss_mc_ci95_low": 0.7945183833480323,
+      "probability_loss_mc_ci95_high": 0.8015558207617843,
+      "median_max_drawdown": 0.022662411557268003,
+      "p95_max_drawdown": 0.05321361673930147
     }
   ],
   "warnings": [
@@ -253,6 +289,7 @@
     "Borrow availability, margin calls, taxes, market impact, and intraday gaps are omitted.",
     "Rolling cointegration tests do not prove persistent mean reversion.",
     "No model was selected by ranking these test-period results.",
-    "Block bootstrap is conditional on this observed test sample and cannot create unseen regimes."
+    "Block bootstrap is conditional on this observed test sample and cannot create unseen regimes.",
+    "Monte Carlo confidence intervals measure finite-path sampling noise only, not model or data uncertainty."
   ]
 }
