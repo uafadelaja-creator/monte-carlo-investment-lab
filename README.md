@@ -54,7 +54,11 @@ monitoring and the prospective audit, and reports finite-path Monte Carlo uncert
   independent tests or silently absorb upstream vendor revisions.
 - Exact CI dependency pins, bounded retries for the official factor download,
   and data-download defaults that exclude the current in-progress session.
-- A chained-SHA forward l### Current fixed holdout result
+- A chained-SHA forward ledger that begins on 1 November 2026 without backfilling
+  signals. Daily range/liquidity fields are audit context; bid/ask spread and
+  borrow inventory remain explicitly unobserved.
+
+### Current fixed holdout result
 
 The frozen protocol was refreshed on 2,980 adjusted daily observations through
 6 November 2026, with a 3 January 2023 holdout start. It still produced only three
@@ -75,10 +79,6 @@ Cost and formation-window sensitivity changed outcomes materially. Descriptive
 Fama-French alpha estimates were not statistically persuasive and are not proof
 of implementable alpha. The current result is therefore **no demonstrated
 statistical-arbitrage edge**. See `RUN_2026-11-08.md`,
-`results/stat_arb_current/FORWARD_SIGNAL_AUDIT.md`, and `STAT_ARB_GUIDE.md`.
-
-. The current result is therefore **no demonstrated
-statistical-arbitrage edge**. See `RUN_2026-11-01.md`,
 `results/stat_arb_current/FORWARD_SIGNAL_AUDIT.md`, and `STAT_ARB_GUIDE.md`.
 
 ## Historical data refresh · 7 November 2026
