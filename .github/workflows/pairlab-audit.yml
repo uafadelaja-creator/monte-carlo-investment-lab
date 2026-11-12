@@ -1,0 +1,49 @@
+name: PAIR LAB independent audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "stat-arb-dashboard/**"
+      - ".github/workflows/pairlab-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate published site and model gates
+        run: python stat-arb-dashboard/site_audit.py
+
+      - name: Check browser JavaScript syntax
+        run: |
+          node -e 'const fs=require("fs");let s=fs.readFileSync("stat-arb-dashboard/index.html","utf8");let js=s.match(/<script>([\s\S]*?)<\/script>/);if(!js)throw Error("Missing inline JS");new Function(js[1]);console.log("PASS: browser JavaScript parses");'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install independent statistical library
+        run: python -m pip install -r requirements-ci.txt
+
+      - name: Recompute entire pair universe independently
+        run: >
+          python stat-arb-dashboard/recompute_audit.py
+          --allow-unadjusted
+          --output stat-arb-dashboard/data/independent_audit.json
+
+      - name: Preserve independent audit result
+        uses: actions/upload-artifact@v4
+        with:
+          name: pairlab-independent-audit
+          path: stat-arb-dashboard/data/independent_audit.json
+          retention-days: 30
