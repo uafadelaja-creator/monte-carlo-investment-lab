@@ -158,7 +158,7 @@
     if(!replay){
       host.append(svg("text",{x:330,y:110,fill:"#9ab9cd","text-anchor":"middle"},"No price-only historical replay available"));
       $("plan-result").textContent="Choose a pair and a historical threshold crossing.";
-      $("plan-net").textContent="—";$("plan-gross").textContent="—";$("plan-days").textContent="—";
+      $("plan-net").textContent="—";$("plan-pnl-gross").textContent="—";$("plan-days").textContent="—";
       $("plan-reason").textContent="Historical prices and parameters are needed.";return;
     }
     const {line,final,completed}=replay;
@@ -180,7 +180,7 @@
     host.append(svg("circle",{cx:x(line.length-1),cy:y(final.net),r:5,fill:final.net<0?"#ff889f":"#b9fa91"}));
     host.append(svg("text",{x:l,y:H-6,fill:"#8eacc3","font-size":"10"},reportDate(replay.entryDate)));
     host.append(svg("text",{x:W-right,y:H-6,fill:"#8eacc3","font-size":"10","text-anchor":"end"},reportDate(replay.endDate)));
-    $("plan-gross").textContent=money(final.gross);
+    $("plan-pnl-gross").textContent=money(final.gross);
     $("plan-net").textContent=money(final.net);
     $("plan-net").className=final.net<0?"neg":"pos";
     $("plan-days").textContent=final.age+" sessions";
