@@ -18,10 +18,12 @@ a{color:var(--cyan)}button,input,select{font:inherit}button{cursor:pointer}.shel
 @media(max-width:630px){.shell{padding:0 16px}.topnav a{display:none}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric{padding:14px;min-height:110px}.metric .big{font-size:30px}.audit-grid{grid-template-columns:1fr}.sectionhead{display:block}.footer{display:block}.hero{padding-top:37px}.panel{padding:15px}}
 </style>
 <link rel="stylesheet" href="charts.css">
+<link rel="stylesheet" href="plans.css">
+<script src="plans.js" defer></script>
 <script src="charts.js" defer></script>
 </head>
 <body>
-<div class="shell"><header class="top"><a class="brand" href="../index.html">PAIR<b>//</b>LAB<small>STATISTICAL ARBITRAGE OBSERVATORY</small></a><nav class="topnav"><a href="#overview">Overview</a><a href="#scanner">Scanner</a><a href="#audit">Model audit</a><span class="status">● PROVISIONAL DATA</span></nav></header>
+<div class="shell"><header class="top"><a class="brand" href="../index.html">PAIR<b>//</b>LAB<small>STATISTICAL ARBITRAGE OBSERVATORY</small></a><nav class="topnav"><a href="#overview">Overview</a><a href="#plan-builder">Trade plans</a><a href="#scanner">Scanner</a><a href="#audit">Model audit</a><span class="status">● PROVISIONAL DATA</span></nav></header>
 <main>
 <section class="hero" id="overview"><div><div class="eyebrow">UAF RESEARCH SYSTEMS / QUANTITATIVE RESEARCH</div><h1>Find the <em>divergence.</em><br>Prove the edge.</h1><p class="lead">A transparent, research-first lens on pairs trading. Evaluate cointegration, return correlation, spread deviations and multiple-testing risk—without confusing statistical anomalies with executable opportunities.</p><div class="hero-actions"><a class="btn primary" href="#scanner">Explore pair scanner ↗</a><a class="btn" href="#audit">Read the audit</a><a class="btn" href="data/screen.json" download>Download research JSON</a></div></div><div class="orbit" aria-hidden="true"><div class="cross"></div><div class="cross vertical"></div><div class="core">∑</div><div class="node one">Z-SCORE</div><div class="node two">P-VALUE</div><div class="node three">HEDGE β</div></div></section>
 <div class="alert"><span aria-hidden="true" style="font-size:20px">⚠</span><div><strong>RESEARCH ONLY — NO VERIFIED TRADE SIGNALS</strong><p>Last available input: November 11, 2026. The screen uses a third-party daily-price source with incomplete corporate-action verification. No pair passed all three alert gates, and no candidate passed 5% FDR correction. Do not use these readings for live execution.</p></div></div>
@@ -31,6 +33,83 @@ a{color:var(--cyan)}button,input,select{font:inherit}button{cursor:pointer}.shel
 <div class="panel"><div class="panel-header"><div><h3>Spread deviation vs. correlation</h3><span>Click a point to inspect pair evidence</span></div><div class="legend"><span><i></i>Standard screen</span><span class="gold"><i></i>Nominal p &lt; .05</span></div></div><div class="chartwrap"><svg id="scatter" role="img" aria-label="Pair Z-score against 90-day correlation"></svg></div><div class="chartnote">Dashed lines show |Z| = 2 and correlation = 0.75. Points above or below the Z bands are not automatically trades.</div></div>
 <div class="panel"><div class="panel-header"><div><h3>Pair diagnostics</h3><span id="selected-label">Select a pair from chart or table</span></div><span class="pill watch" id="pair-status">RESEARCH</span></div><div id="pair-detail" class="detail" aria-live="polite"></div></div>
 </div>
+
+
+<section class="sectionhead" id="plan-builder">
+  <div><div class="eyebrow">Strategy simulator / no orders placed</div><h2>Build a conditional pairs-trade plan</h2></div>
+  <p>Every proposal starts with <strong>NO CURRENT TRADE</strong> · price snapshot November 11, 2026</p>
+</section>
+<div class="plan-banner" role="note"><span aria-hidden="true" style="font-size:21px">◇</span><div><strong>No current pair qualifies for a trade.</strong><p>The plans below describe what could become interesting if the missing statistical and real-world checks improve. Explore historical outcomes with adjustable research assumptions, not live prices, broker-ready quantities, or predictions.</p></div></div>
+<div class="plan-tabs" role="group" aria-label="Research plan ideas">
+  <button type="button" data-proposal-pair="AVAV/KTOS" aria-pressed="true">AVAV / KTOS · Watch relationship</button>
+  <button type="button" data-proposal-pair="KTOS/ONDS" aria-pressed="false">KTOS / ONDS · Needs stronger correlation</button>
+  <button type="button" data-proposal-pair="SOFI/NU" aria-pressed="false">SOFI / NU · Digital-bank study</button>
+  <button type="button" data-proposal-pair="AMD/MRVL" aria-pressed="false">AMD / MRVL · Divergence without cointegration</button>
+  <button type="button" data-proposal-pair="NVDA/TSM" aria-pressed="false">NVDA / TSM · Extreme but unconfirmed</button>
+</div>
+<div class="plan-grid">
+  <article class="plan-box" aria-labelledby="plan-heading">
+    <div class="plan-flag" id="plan-verdict">NO CURRENT QUALIFIED ENTRY</div>
+    <h3 id="plan-heading" style="margin-top:12px">Conditional trade hypothesis</h3>
+    <p class="plan-sub" id="plan-selected">Choose a pair to explore.</p>
+    <label for="plan-pair" style="display:block;font-size:11px;color:#a7c5d9;margin:0 0 6px">Explore any of the 18 researched pairs</label>
+    <select id="plan-pair" class="field" style="width:100%;margin-bottom:9px" aria-label="Choose a pair for strategy planning"><option>Loading pairs…</option></select>
+    <div class="plan-micro"><span id="plan-current">Reading statistical inputs…</span></div>
+    <div class="plan-steps">
+      <div class="plan-step"><div class="label">1 · Watch for a future setup</div><p id="plan-condition">A conditional threshold crossing would only start the review.</p></div>
+      <div class="plan-step"><div class="label">2 · Hypothetical direction</div><p id="plan-direction">If valid, compare long and short legs based on the spread sign.</p></div>
+      <div class="plan-step"><div class="label">3 · Exit and invalidation</div><p id="plan-exit-text">Use predeclared spread conditions rather than improvising after entry.</p></div>
+      <div class="plan-step"><div class="label">4 · Why not now?</div><p id="plan-reject">Most models fail their quality requirements.</p></div>
+    </div>
+    <p class="plan-warning">A stop expressed as a Z-score <strong>does not cap dollar losses</strong>. Short positions can have losses greater than the original exposure. No current stock or option contracts are being recommended.</p>
+  </article>
+  <article class="plan-box" aria-labelledby="replay-heading">
+    <h3 id="replay-heading">Historical paper-trade replay</h3>
+    <p class="plan-sub">Change assumptions and replay an actual past ±Z crossing, with entry at the next session's close. This does NOT validate profitable trading.</p>
+    <div class="plan-controls">
+      <label>Entry watch at |Z|
+        <select id="plan-entry"><option value="1.5">1.50 · looser research</option><option value="1.75">1.75</option><option value="2" selected>2.00 · default</option><option value="2.25">2.25</option><option value="2.5">2.50 · stricter</option></select>
+      </label>
+      <label>Exit if |Z| falls to
+        <select id="plan-exit"><option value="0">0.00</option><option value="0.25">0.25</option><option value="0.5" selected>0.50 · default</option><option value="0.75">0.75</option><option value="1">1.00</option></select>
+      </label>
+      <label>Invalidate at |Z|
+        <select id="plan-stop"><option value="2.5">2.50</option><option value="3" selected>3.00 · default</option><option value="3.5">3.50</option><option value="4">4.00</option></select>
+      </label>
+      <label>Maximum holding period
+        <select id="plan-hold"><option value="5">5 sessions</option><option value="10">10 sessions</option><option value="20" selected>20 sessions</option></select>
+      </label>
+      <label>Gross two-leg notional
+        <select id="plan-gross"><option value="100">$100</option><option value="200">$200</option><option value="300" selected>$300 · educational default</option><option value="500">$500</option><option value="1000">$1,000</option></select>
+      </label>
+      <label>Transaction cost per fill
+        <select id="plan-fees"><option value="0">0 bps · unrealistic ideal</option><option value="10" selected>10 bps · illustrative</option><option value="25">25 bps</option><option value="50">50 bps</option></select>
+      </label>
+      <label>Annualized stock-borrow charge
+        <select id="plan-borrow"><option value="0">0% · unrealistic ideal</option><option value="3" selected>3% · hypothetical</option><option value="8">8%</option><option value="15">15%</option></select>
+      </label>
+      <div class="plan-instructions" style="margin-top:0"><strong style="font-size:12px">What changes?</strong><p style="font-size:11px">Entry threshold changes which historical events appear. Exit, stop and holding period change the replay. Size and costs change hypothetical dollar P/L.</p></div>
+    </div>
+    <p class="plan-method" id="plan-notional-description">Gross exposure is not account equity or defined maximum risk.</p>
+    <div class="plan-events"><label for="plan-event">Choose a historical Z crossing</label><select id="plan-event"><option>Loading price-only events…</option></select></div>
+    <p class="plan-sub" id="plan-event-count">Research events will appear here.</p>
+    <div class="plan-readout">
+      <div class="plan-kpis">
+        <div class="plan-kpi"><small>Gross P/L</small><b id="plan-gross">—</b></div>
+        <div class="plan-kpi"><small>Net modeled P/L</small><b id="plan-net">—</b></div>
+        <div class="plan-kpi"><small>Sessions held</small><b id="plan-days">—</b></div>
+      </div>
+      <hr class="plan-divider">
+      <div class="legend-trade"><span>Net after assumed costs</span><span class="alt">Gross before costs</span></div>
+      <svg id="plan-equity-chart" class="plan-replay-chart" role="img" aria-label="Hypothetical gross and net pairs trade profit and loss over a selected historical event"></svg>
+      <p class="plan-replay-status" id="plan-result" aria-live="polite">Loading historical replay…</p>
+      <p class="plan-replay-status" id="plan-reason">Replay entries and exits use future observations only after each signal date.</p>
+    </div>
+    <p class="plan-warning">Educational simplifying assumptions: equal-dollar long/short exposure (not the fitted hedge ratio), next-session <em>closing</em> fills (not guaranteed executable), no leverage constraints, bid/ask depth, dividends, borrow recall or taxes. Historical signal selection is retrospective. The sample is from a third-party close series with unverified adjustment history.</p>
+    <button type="button" id="plan-download" class="btn" style="margin-top:14px">Export this research plan ↓</button>
+  </article>
+</div>
+<div class="plan-instructions" style="margin-top:15px"><h3>Why would a possible trade fail?</h3><p><strong>Example A — AVAV/KTOS:</strong> Correlation was fairly high, but the standard cointegration check did not pass; wait for fresh evidence. <strong>Example B — KTOS/ONDS:</strong> The raw cointegration p-value was below 0.05, but correlation, the multiple-testing correction and deviation threshold did not pass. <strong>Example C — AMD/MRVL:</strong> The spread was stretched, but the tested long-run relationship was unsupported. These are research ideas for learning how to reject weak setups, not buy/sell calls.</p></div>
 
 <section class="sectionhead" id="trade-visualizer"><div><div class="eyebrow">Real historical prices / explanatory signals</div><h2>Visualize the relationship, not just the numbers</h2></div><p>Research snapshot through Nov 11, 2026 · Select a pair or click the table</p></section>
 <div class="pair-trade-toolbar">
