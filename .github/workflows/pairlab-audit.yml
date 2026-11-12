@@ -26,6 +26,12 @@ jobs:
         run: |
           node -e 'const fs=require("fs");let s=fs.readFileSync("stat-arb-dashboard/index.html","utf8");let js=s.match(/<script>([\s\S]*?)<\/script>/);if(!js)throw Error("Missing inline JS");new Function(js[1]);console.log("PASS: browser JavaScript parses");'
 
+      - name: Check external JavaScript and interactive plan controls
+        run: |
+          node --check stat-arb-dashboard/charts.js
+          node --check stat-arb-dashboard/plans.js
+          node stat-arb-dashboard/plans_smoke.test.cjs
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
