@@ -114,5 +114,45 @@ print("      max |Z delta|=", round(max_z_error,6),
       "; max |beta delta|=", round(max_beta_error,6),
       "; max |correlation delta|=", round(max_corr_error,6))
 
+
+# Strategy workspace structural audit.
+from html.parser import HTMLParser
+
+class _IdParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.ids = []
+    def handle_starttag(self, tag, attrs):
+        for key, value in attrs:
+            if key == "id":
+                self.ids.append(value)
+
+parser = _IdParser()
+parser.feed(site)
+assert len(parser.ids) == len(set(parser.ids)), "Duplicate HTML element IDs"
+expected_plan_ids = [
+    "plan-builder","plan-pair","plan-entry","plan-exit","plan-stop","plan-hold",
+    "plan-gross","plan-fees","plan-borrow","plan-equity-chart","plan-event",
+    "plan-pnl-gross","plan-net","plan-days","plan-result","plan-verdict",
+    "plan-download","plan-condition","plan-direction","plan-exit-text","plan-reject"
+]
+assert all(key in parser.ids for key in expected_plan_ids)
+assert "id=\"plan-builder\"" in site and "NO CURRENT TRADE" in site
+assert 'href="plans.css"' in site and 'src="plans.js"' in site
+script = (HERE / "plans.js").read_text(encoding="utf-8")
+style = (HERE / "plans.css").read_text(encoding="utf-8")
+assert len(script) > 8000 and len(style) > 1000
+assert all(token in script for token in [
+    "function findCrossings(","function paperReplay(","function exportPlan(",
+    "const entry=trigger+1","const sample=arr.slice(t-252,t)",
+    "Math.abs(z)>=threshold","borrow", "fees",
+    "window.addEventListener(\"pairlab:selected\""
+])
+assert '$("plan-gross").textContent' not in script, "Notional input must remain separate from P/L output"
+assert '$("plan-pnl-gross").textContent' in script
+assert len(re.findall(r'data-proposal-pair="[A-Z]+/[A-Z]+"', site)) >= 3
+print("PASS: trade-plan controls, unique DOM IDs, no-lookahead formation,")
+print("      next-close paper fills, notional/P&L separation and no-trade disclosures.")
+
 print("PASS: site structure, internal links, screen schema, 18 unique hypotheses,")
 print("      gate integrity, BH FDR recalculation, zero alerts, and provisional disclosures.")
