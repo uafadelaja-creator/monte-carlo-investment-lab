@@ -18,6 +18,20 @@ python -m http.server 8000
 Directly opening the HTML using \`file://\` is not supported because the site fetches its JSON file. It requires HTTP hosting. The repository has GitHub Pages enabled and a previously confirmed deployment. Use [the published dashboard](https://uafadelaja-creator.github.io/monte-carlo-investment-lab/stat-arb-dashboard/).
 
 
+
+## Free TradingView market charts (November 15, 2026)
+
+PAIR//LAB now embeds two **TradingView Advanced Chart** widgets, one for each member of the selected research pair. This is the *free widget integration* documented by [TradingView](https://www.tradingview.com/widget-docs/widgets/charts/advanced-chart/) rather than a paid market-data feed, Charting Library installation, OAuth connection, or brokerage account integration.
+
+- Change the selected pair using the scanner, historical chart pair picker, or conditional-plan research selector; both TradingView widgets update using a fixed whitelist of verified exchange-qualified symbols for all 20 tracked tickers.
+- Explore candlesticks, volume, timeframes and chart tools. Each side includes an "Open in TradingView" link for deeper analysis, and the site offers a manual "Reload charts" action.
+- TradingView provides chart prices **independently** of PAIR//LAB. Depending on exchange coverage and licensing, the widget may display real-time **or delayed** market quotes. It does not guarantee consolidated real-time U.S. market data, and no TradingView account needs to be linked to use the embed.
+- Selecting an instrument inside an external TradingView chart (if supported) does **not** update the pair research. The widget is configured with the selected instrument fixed so it remains aligned with the chosen research pair.
+- Importantly, **the research snapshot remains dated 2026-11-11**. The TradingView embed provides *no historical OHLCV feed, quote values, auth credentials or indicator calculations* to the statistical scanner. The Z-scores, p-values, backtests and hypothetical trade proposals continue to use separately sourced historical closes. The two should not be conflated.
+- If a privacy blocker prevents embedded TradingView scripts, the user can follow the direct TradingView symbol links. No secret credentials are stored in this static GitHub Pages site.
+
+Integration files: \`tradingview.js\`, \`tradingview.css\`, and the deterministic Node test \`tradingview_smoke.test.cjs\`. Github Actions runs the test along with existing statistical audit and paper-replay checks.
+
 ## Interactive trade-plan research workspace
 
 The website includes an **educational conditional plan builder**, not a brokerage execution engine. You can explore any of the 18 pairs and five preselected research examples (AVAV/KTOS, KTOS/ONDS, SOFI/NU, AMD/MRVL, NVDA/TSM). None currently meets the full snapshot screening gates.
