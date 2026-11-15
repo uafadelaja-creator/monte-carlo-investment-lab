@@ -154,5 +154,25 @@ assert len(re.findall(r'data-proposal-pair="[A-Z]+/[A-Z]+"', site)) >= 3
 print("PASS: trade-plan controls, unique DOM IDs, no-lookahead formation,")
 print("      next-close paper fills, notional/P&L separation and no-trade disclosures.")
 
+
+# Free TradingView integration: provider charts must not silently become the
+# scanner's data input or request user credentials.
+tv = (HERE / "tradingview.js").read_text(encoding="utf-8")
+tv_css = (HERE / "tradingview.css").read_text(encoding="utf-8")
+tv_test = (HERE / "tradingview_smoke.test.cjs").read_text(encoding="utf-8")
+assert len(tv) > 2500 and len(tv_css) > 1000 and len(tv_test) > 2000
+assert 'id="tradingview-charts"' in site
+assert 'id="tv-host-a"' in site and 'id="tv-host-b"' in site
+assert 'id="tv-reload"' in site
+assert 'src="tradingview.js"' in site and 'href="tradingview.css"' in site
+assert 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js' in tv
+assert '"pairlab:selected"' in tv and "pairlabCurrentPair" in tv
+assert '"dark"' in tv
+assert '"AVAV":"NASDAQ"' in tv and '"NU":"NYSE"' in tv
+assert "TradingView does not supply prices to the statistical scanner through this embed" in site
+assert "November 11, 2026" in site
+assert all(s not in tv.lower() for s in ("api_key", "password", "auth_token", "client_secret"))
+print("PASS: free TradingView embed mounted with distinct chart hosts, whitelist, no credential handling, and source-data separation.")
+
 print("PASS: site structure, internal links, screen schema, 18 unique hypotheses,")
 print("      gate integrity, BH FDR recalculation, zero alerts, and provisional disclosures.")
