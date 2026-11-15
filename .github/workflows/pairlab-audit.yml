@@ -31,6 +31,8 @@ jobs:
           node --check stat-arb-dashboard/charts.js
           node --check stat-arb-dashboard/plans.js
           node stat-arb-dashboard/plans_smoke.test.cjs
+          node --check stat-arb-dashboard/tradingview.js
+          node stat-arb-dashboard/tradingview_smoke.test.cjs
 
       - name: Set up Python
         uses: actions/setup-python@v5
