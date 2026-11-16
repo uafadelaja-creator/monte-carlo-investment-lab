@@ -23,7 +23,7 @@ live in `assets/`. All displayed metrics, normalized historical chart series,
 and simulated percentile curves come from `results/historical_dashboard_data.json`.
 
 
-## Current research release: v0.8 · 8 November 2026
+## Current research release: v0.9 · 15 November 2026
 
 The repository now keeps three layers deliberately separate:
 
@@ -35,8 +35,8 @@ The repository now keeps three layers deliberately separate:
    same-industry pair hypotheses with delayed fills, modeled costs, and a holdout.
    It is not a signal service and has not established profitable alpha.
 
-Version 0.8 preserves the third layer's frozen protocol, continues sequential
-monitoring and the prospective audit, and reports finite-path Monte Carlo uncertainty:
+Version 0.9 preserves the third layer's frozen protocol, continues sequential
+monitoring and the prospective audit, and hardens reproducibility:
 
 - Fixed hypotheses: V/MA, KO/PEP, and XOM/CVX; no winner is selected ex post.
 - A 2023-01-03 holdout start with 252-day trailing formation, monthly refits,
@@ -53,21 +53,27 @@ monitoring and the prospective audit, and reports finite-path Monte Carlo uncert
   prior-prefix price-hash check so repeated weekly runs cannot be mistaken for
   independent tests or silently absorb upstream vendor revisions.
 - Exact CI dependency pins, bounded retries for the official factor download,
-  and data-download defaults that exclude the current in-progress session.
+  a corrected official factor endpoint/HTTP transport, and data-download defaults
+  that exclude the current in-progress session.
 - A chained-SHA forward ledger that begins on 1 November 2026 without backfilling
   signals. Daily range/liquidity fields are audit context; bid/ask spread and
   borrow inventory remain explicitly unobserved.
+- An end-to-end synthetic lifecycle test proving that a frozen entry resolves on
+  the next completed session exactly once, including across repeated runs.
+- The separate PAIR//LAB provisional 18-pair screen passes its site, plan, chart,
+  and TradingView data-separation audits. It remains hypothesis generation and
+  does not alter the frozen three-pair protocol or its conclusions.
 
 ### Current fixed holdout result
 
-The frozen protocol was refreshed on 2,980 adjusted daily observations through
-6 November 2026, with a 3 January 2023 holdout start. It still produced only three
+The frozen protocol was refreshed on 2,985 adjusted daily observations through
+13 November 2026, with a 3 January 2023 holdout start. It still produced only three
 entries across all pairs: V/MA netted −0.005%, KO/PEP stayed flat, and XOM/CVX
 netted −2.29%. Exposure ranged from 0% to 2.1% of sessions.
 
-Across 50,000 moving-block paths, the 36-month loss frequency was 45.27% for
-V/MA (finite-path 95% interval 44.83%–45.71%) and 79.81% for XOM/CVX
-(79.45%–80.16%). KO/PEP's 0% frequency reflects no trades, not a successful
+Across 50,000 moving-block paths, the 36-month loss frequency was 45.19% for
+V/MA (finite-path 95% interval 44.76%–45.63%) and 79.52% for XOM/CVX
+(79.17%–79.88%). KO/PEP's 0% frequency reflects no trades, not a successful
 strategy. These intervals quantify Monte Carlo sampling error only.
 
 The five new sessions generated no entry. All three pairs remained flat in the
@@ -78,7 +84,7 @@ vendor revision risk.
 Cost and formation-window sensitivity changed outcomes materially. Descriptive
 Fama-French alpha estimates were not statistically persuasive and are not proof
 of implementable alpha. The current result is therefore **no demonstrated
-statistical-arbitrage edge**. See `RUN_2026-11-08.md`,
+statistical-arbitrage edge**. See `RUN_2026-11-15.md`,
 `results/stat_arb_current/FORWARD_SIGNAL_AUDIT.md`, and `STAT_ARB_GUIDE.md`.
 
 ## Historical data refresh · 7 November 2026
@@ -230,7 +236,8 @@ The historical engine resamples contiguous three-month blocks of **joint** ARKK/
 - `results/historical_metadata.json`: source window, seed, hash, assumptions, and limitations.
 - `results/historical_metadata.json`: includes the original input hash and source window.
 - `RUN_2026-10-11.md`: archived initial historical research report.
-- `RUN_2026-11-08.md`: latest frozen stat-arb refresh and validation report.
+- `RUN_2026-11-08.md`: prior frozen stat-arb refresh and validation report.
+- `RUN_2026-11-15.md`: current frozen stat-arb refresh and validation report.
 - `render_historical_results.py`: regenerate both pages from aggregate JSON and shared layout.
 - `CHANGELOG.md`: version history and methodological upgrades.
 - `STAT_ARB_GUIDE.md`: frozen pair protocol, data caveats, and roadmap.

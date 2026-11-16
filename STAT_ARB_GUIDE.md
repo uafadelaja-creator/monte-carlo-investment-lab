@@ -1,4 +1,4 @@
-# Historical data + statistical-arbitrage research (v0.8)
+# Historical data + statistical-arbitrage research (v0.9)
 
 This empirical module is separate from the original assumption-driven `simulate.py`.
 It tests predeclared pairs and does not generate live trade alerts or assert alpha.
@@ -190,6 +190,27 @@ paths, 36-month loss frequencies were 45.27% (Monte Carlo 95% interval
 0% frequency still denotes inactivity. The new intervals quantify simulation
 noise only; broader research uncertainty is much larger.
 
+## Sequential update, 15 November 2026
+
+Five additional completed sessions extended the frozen holdout through
+2026-11-13. No pair generated a new entry, and the forward states remained flat.
+V/MA ended at Z = −1.14 with a 0.652 trailing cointegration p-value; XOM/CVX
+ended at Z = −1.13 with p = 0.011, but did not cross the frozen ±2.0 entry gate;
+KO/PEP again had no valid current estimate. No next-session execution audit is
+pending.
+
+The holdout still contains only three entries: V/MA has two and −0.005% net,
+KO/PEP has none, and XOM/CVX has one and −2.29% net. The 36-month moving-block
+loss frequencies are 45.19% (Monte Carlo 95% interval 44.76%–45.63%) for V/MA
+and 79.52% (79.17%–79.88%) for XOM/CVX. KO/PEP's 0% remains inactivity.
+
+The official factor downloader now uses the current case-sensitive archive URL
+and a pinned HTTP client; 26,338 factor rows were retrieved through 2026-09-30.
+An end-to-end synthetic test now verifies that a prospective entry resolves on
+the next completed session exactly once and remains idempotent on later runs.
+The separate provisional 18-pair PAIR//LAB screen passes its audits, but it is
+not part of the frozen confirmatory protocol and did not select these results.
+
 ## Roadmap
 
 1. Continue both frozen ledgers without treating weekly runs as independent tests.
@@ -199,4 +220,6 @@ noise only; broader research uncertainty is much larger.
    available.
 4. Accumulate enough prospective events before evaluating execution slippage or
    considering any real-money use.
+5. Add a CI test fixture for an EXIT/REVERSAL after a resolved entry, without
+   changing the frozen economic parameters.
 
