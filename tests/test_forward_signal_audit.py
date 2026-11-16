@@ -1,3 +1,5 @@
+import hashlib
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -55,6 +57,117 @@ class ForwardAuditTests(unittest.TestCase):
         self.assertAlmostEqual(first, 0.4)
         self.assertAlmostEqual(second, -0.6)
         self.assertAlmostEqual(abs(first) + abs(second), 1.0)
+
+    def test_entry_resolves_once_on_next_completed_session(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            results = root / "results"
+            data = root / "data"
+            results.mkdir()
+            data.mkdir()
+
+            settings = {
+                "formation_days": 252,
+                "z_lookback": 60,
+                "refit_every_days": 21,
+                "entry_z": 2.0,
+                "exit_z": 0.5,
+                "stop_z": 3.5,
+                "cointegration_max_p": 0.05,
+                "turnover_cost_bps_per_notional_dollar": 10.0,
+                "hypothetical_short_borrow_apr": 0.03,
+                "execution": "signal after close T; modeled fill at close T+1",
+                "price_basis": "vendor-adjusted close",
+            }
+            report = {
+                "pair": ["V", "MA"],
+                "test_start": "2023-01-03",
+                "settings": settings,
+            }
+            (results / "V_MA_report.json").write_text(
+                json.dumps(report), encoding="utf-8"
+            )
+            dates = pd.to_datetime(["2026-11-13", "2026-11-16"])
+            daily = pd.DataFrame(
+                {
+                    "signal_side": [1, 1],
+                    "hedge_beta": [1.5, 1.5],
+                    "zscore": [-2.1, -2.2],
+                    "cointegration_p": [0.04, 0.04],
+                },
+                index=dates,
+            )
+            daily.to_csv(results / "V_MA_daily.csv")
+
+            adjusted = pd.DataFrame(
+                {"V": [100.0, 101.0], "MA": [200.0, 202.0]}, index=dates
+            )
+            market_frames = {
+                "adjusted_close": adjusted,
+                "raw_open": adjusted - 0.5,
+                "raw_high": adjusted + 1.0,
+                "raw_low": adjusted - 1.0,
+                "raw_close": adjusted,
+                "volume": pd.DataFrame(
+                    {"V": [1_000_000, 1_100_000], "MA": [900_000, 950_000]},
+                    index=dates,
+                ),
+            }
+            for name, frame in market_frames.items():
+                frame.to_csv(data / f"{name}.csv")
+            price_hash = hashlib.sha256(
+                (data / "adjusted_close.csv").read_bytes()
+            ).hexdigest()
+            (data / "download_manifest.json").write_text(
+                json.dumps(
+                    {
+                        "latest_date": "2026-11-16",
+                        "file_sha256": {"adjusted_close.csv": price_hash},
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            protocol, protocol_sha = audit._protocol({"V/MA": report})
+            entry = self._row()
+            entry.update(
+                {
+                    "record_key": "observation|V/MA|2026-11-13|2026-11-15",
+                    "observed_on": "2026-11-15",
+                    "data_through": "2026-11-13",
+                    "protocol_sha256": protocol_sha,
+                    "source_sha256": price_hash,
+                    "signal_date": "2026-11-13",
+                    "signal_event": "ENTRY",
+                    "signal_side": 1,
+                    "signal_state": "long_first_short_second",
+                    "execution_status": "pending_next_session_close_audit",
+                }
+            )
+            ledger = audit.append_rows(pd.DataFrame(), [entry])
+
+            records, observed_protocol, observed_sha = audit.build_records(
+                results, data, ledger, "2026-11-17"
+            )
+            self.assertEqual(observed_protocol, protocol)
+            self.assertEqual(observed_sha, protocol_sha)
+            updated = audit.append_rows(ledger, records)
+            resolutions = updated.loc[updated["record_type"] == "resolution"]
+            self.assertEqual(len(resolutions), 1)
+            resolution = resolutions.iloc[0]
+            self.assertEqual(resolution["execution_date"], "2026-11-16")
+            self.assertEqual(float(resolution["adjusted_price_a"]), 101.0)
+            self.assertEqual(float(resolution["raw_close_b"]), 202.0)
+            self.assertTrue(audit.verify_chain(updated))
+
+            rerun_records, _, _ = audit.build_records(
+                results, data, updated, "2026-11-18"
+            )
+            rerun = audit.append_rows(updated, rerun_records)
+            self.assertEqual(
+                len(rerun.loc[rerun["record_type"] == "resolution"]), 1
+            )
+            self.assertTrue(audit.verify_chain(rerun))
 
 
 if __name__ == "__main__":

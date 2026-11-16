@@ -7,17 +7,16 @@ import io
 import json
 import re
 import time
-import urllib.error
-import urllib.request
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
+import requests
 
 
 DEFAULT_URL = (
-    "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/"
+    "https://mba.tuck.dartmouth.edu/pages/faculty/Ken.french/ftp/"
     "F-F_Research_Data_Factors_daily_CSV.zip"
 )
 
@@ -27,16 +26,21 @@ def sha256_bytes(value: bytes) -> str:
 
 
 def fetch_archive(url: str, retries: int = 3) -> bytes:
-    request = urllib.request.Request(url, headers={"User-Agent": "MonteCarloInvestmentLab/0.5"})
+    headers = {"User-Agent": "MonteCarloInvestmentLab/0.9"}
     retryable = {429, 500, 502, 503, 504}
     for attempt in range(1, retries + 1):
         try:
-            with urllib.request.urlopen(request, timeout=90) as response:
-                return response.read()
-        except urllib.error.HTTPError as exc:
-            if exc.code not in retryable or attempt == retries:
+            response = requests.get(url, headers=headers, timeout=90)
+            if response.status_code in retryable and attempt < retries:
+                time.sleep(2 ** (attempt - 1))
+                continue
+            response.raise_for_status()
+            return response.content
+        except requests.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else None
+            if status not in retryable or attempt == retries:
                 raise
-        except urllib.error.URLError:
+        except requests.RequestException:
             if attempt == retries:
                 raise
         time.sleep(2 ** (attempt - 1))

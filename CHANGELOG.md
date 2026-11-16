@@ -22,6 +22,22 @@
 
 # Changelog
 
+## v0.9 · 15 November 2026
+
+- Extended the unchanged frozen-pair holdout through 13 November; five new
+  sessions produced no entries and all three prospective states remained flat.
+- Corrected the case-sensitive Kenneth French archive endpoint and switched its
+  fetch to a declared, pinned HTTP dependency; the official factor file again
+  downloads reproducibly through 30 September 2026.
+- Added an end-to-end synthetic forward-audit lifecycle test proving that an entry
+  resolves on the next completed session exactly once and remains idempotent.
+- Continued both append-only ledgers, preserved the protocol fingerprint, and
+  disclosed another upstream adjusted-price prefix revision.
+- Reproduced six aggregate/bootstrap outputs byte-for-byte in a second 50,000-path
+  run; 22 Python tests and all PAIR//LAB site/smoke audits pass.
+- Preserved the assumption-driven simulator and historical ETF dashboard unchanged;
+  the provisional 18-pair screen did not alter the fixed empirical hypotheses.
+
 ## v0.8 · 8 November 2026
 
 - Extended the frozen pairs holdout through 6 November without changing
