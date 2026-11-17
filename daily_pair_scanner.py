@@ -8,6 +8,9 @@ of profitable signals. Fails closed instead of publishing stale/partial results.
 from __future__ import annotations
 
 import argparse
+import gzip
+import hashlib
+import io
 import itertools
 import json
 import math
@@ -265,6 +268,35 @@ def main() -> None:
     tickers = sorted(set(itertools.chain.from_iterable(PEER_GROUPS.values())))
     prices = download_adjusted_close(tickers)
     result = scan(prices, now, prior)
+    # Capture the exact normalized inputs used by this run, NOT a later vendor
+    # download. Content-addressed snapshots never overwrite prior observations.
+    # The public vendor is fallible; a digest proves reproducibility of these
+    # inputs, not the accuracy of the external feed itself.
+    stream = io.StringIO()
+    prices.to_csv(stream, index_label="date", float_format="%.17g",
+                  date_format="%Y-%m-%d", na_rep="")
+    source_bytes = stream.getvalue().encode("utf-8")
+    source_sha256 = hashlib.sha256(source_bytes).hexdigest()
+    source_rel = ("stat-arb-dashboard/data/source-snapshots/"
+                  + result["as_of"] + "-" + source_sha256[:16] + ".csv.gz")
+    source_path = HERE / source_rel
+    source_path.parent.mkdir(parents=True, exist_ok=True)
+    compressed = gzip.compress(source_bytes, compresslevel=9, mtime=0)
+    if source_path.exists():
+        if gzip.decompress(source_path.read_bytes()) != source_bytes:
+            raise RuntimeError("Stored input checkpoint does not match its digest")
+    else:
+        source_path.write_bytes(compressed)
+    result["input_provenance"] = {
+        "path": source_rel,
+        "sha256_uncompressed_csv": source_sha256,
+        "market_date": result["as_of"],
+        "ticker_count": len(prices.columns),
+        "calendar_rows": len(prices),
+        "timestamp_utc": now.isoformat(),
+        "provider": "Yahoo Finance via yfinance auto_adjust=True; third-party data not independently certified",
+        "method": "Normalized price input downloaded once for scanning and deep reviews; CSV gzip checksum uses uncompressed UTF-8",
+    }
     # Deep reviews reuse this exact validated price download; do not fetch again.
     # Compute both full outputs BEFORE publishing either file.
     from pair_deep_review import LEDGER, update_history
