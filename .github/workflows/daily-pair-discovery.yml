@@ -9,7 +9,9 @@ on:
     branches: [main]
     paths:
       - "daily_pair_scanner.py"
+      - "pair_deep_review.py"
       - "tests/test_daily_pair_scanner.py"
+      - "tests/test_pair_deep_review.py"
       - ".github/workflows/daily-pair-discovery.yml"
 
 permissions:
@@ -40,7 +42,9 @@ jobs:
         run: python -m pip install -r requirements-ci.txt
 
       - name: Test discovery math and fail-closed controls
-        run: python -m unittest tests.test_daily_pair_scanner -v
+        run: |
+          python -m unittest tests.test_daily_pair_scanner -v
+          python -m unittest tests.test_pair_deep_review -v
 
       - name: Scan peer-sector pairs with fresh adjusted data
         run: python daily_pair_scanner.py
@@ -49,7 +53,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pairlab-daily-discovery
-          path: stat-arb-dashboard/data/daily_discovery.json
+          path: |
+            stat-arb-dashboard/data/daily_discovery.json
+            stat-arb-dashboard/data/review_history.json
           if-no-files-found: error
           retention-days: 30
 
@@ -57,7 +63,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add stat-arb-dashboard/data/daily_discovery.json
+          git add stat-arb-dashboard/data/daily_discovery.json stat-arb-dashboard/data/review_history.json
           if ! git diff --cached --quiet; then
             git commit -m "data(pairlab): refresh daily discovery research [skip ci]"
             git push origin HEAD:main
