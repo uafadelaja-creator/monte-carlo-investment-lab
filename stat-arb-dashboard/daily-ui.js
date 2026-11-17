@@ -71,7 +71,13 @@ function reviewCard(r) {
   const names=el("div","");
   names.append(el("div","pair",r.pair),el("div","sector",r.industry+" · Reviewed "+shortDate(r.review_date)));
   top.append(names,classification(r.classification));
-  card.append(top,el("p","verdict",r.verdict));
+  card.append(top);
+  if(!r.input_provenance?.sha256_uncompressed_csv){
+    card.append(el("p","provenance-warning","Archived before price checkpoints were introduced. This older review is not independently reproducible from a preserved source file."));
+  } else {
+    card.append(el("p","muted","Input snapshot retained · SHA-256 "+r.input_provenance.sha256_uncompressed_csv.slice(0,16)+"…"));
+  }
+  card.append(el("p","verdict",r.verdict));
   card.append(el("div","explain",r.relative_value_explanation));
   const stats=el("div","stat-row");
   addMetric(stats,"90-day correlation",number(r.metrics?.correlation_90d,2));
@@ -190,26 +196,101 @@ function drawSummary() {
     scanRows();
   }
 }
-async function fetchJSON(file){
+async function fetchDocument(file){
   const response=await fetch(DATA_BASE+file+"?v="+Date.now(),{cache:"no-store"});
   if(!response.ok)throw Error(file+" unavailable (HTTP "+response.status+")");
-  return response.json();
+  const raw=await response.text();
+  return {raw, data:JSON.parse(raw)};
+}
+async function sha256(text){
+  if(!window.crypto?.subtle)throw Error("Cryptographic integrity checker unavailable on this connection");
+  const bytes=new TextEncoder().encode(text);
+  const buffer=await window.crypto.subtle.digest("SHA-256",bytes);
+  return Array.from(new Uint8Array(buffer),v=>v.toString(16).padStart(2,"0")).join("");
+}
+function hideUnverified(){
+  scan=null;journal=null;
+  $("latest-cards").replaceChildren(el("p","empty","Research is hidden until its independent audit and stored data checks agree."));
+  $("history-rows").replaceChildren();
+  $("scan-rows").replaceChildren();
+  $("archive-detail").replaceChildren();
+  for(const id of ["m-date","m-total","m-unique","m-broad"])$(id).textContent="—";
+  $("source-link").hidden=true;
 }
 async function loadData(){
-  $("last-run").textContent="Checking today's published research…";
-  const [a,b]=await Promise.allSettled([fetchJSON("daily_discovery.json"),fetchJSON("review_history.json")]);
-  const errors=[];
-  if(a.status==="fulfilled"&&a.value?.schema_version===1&&Array.isArray(a.value?.pairs))scan=a.value;
-  else errors.push("Broad scanner: "+(a.reason?.message||"invalid format"));
-  if(b.status==="fulfilled"&&b.value?.schema_version===1&&Array.isArray(b.value?.records))journal=b.value;
-  else errors.push("Deep review journal: "+(b.reason?.message||"not yet published"));
-  drawSummary();
-  const day=journal?.records?.reduce((acc,r)=>r.review_date>acc?r.review_date:acc,"");
-  $("last-run").textContent=errors.length?
-    "Some results are unavailable. "+errors.join(" · ")+". Check workflow logs.":
-    "Latest recorded review: "+shortDate(day)+" · Market data through "+shortDate(scan.as_of)+" · Daily after-market automation enabled.";
-  $("last-run").classList.toggle("error",errors.length>0);
+  $("last-run").textContent="Checking the published data against independent audit hashes…";
+  const [a,b,c]=await Promise.allSettled([
+    fetchDocument("daily_discovery.json"),fetchDocument("review_history.json"),fetchDocument("daily_audit.json")
+  ]);
+  try{
+    if(a.status!=="fulfilled"||b.status!=="fulfilled"||c.status!=="fulfilled"){
+      const failures=[a,b,c].filter(x=>x.status!=="fulfilled").map(x=>x.reason?.message||"unavailable");
+      throw Error("Missing independently audited data: "+failures.join("; "));
+    }
+    const freshScan=a.value.data, freshJournal=b.value.data, report=c.value.data;
+    if(report.status!=="PASS"||report.schema_version!==1)throw Error("Audit did not pass");
+    if(freshScan.schema_version!==1||!Array.isArray(freshScan.pairs))throw Error("Scan format invalid");
+    if(freshJournal.schema_version!==1||!Array.isArray(freshJournal.records))throw Error("Review history format invalid");
+    if(freshScan.as_of!==report.market_date || freshJournal.records.length!==report.review_records)throw Error("Scan, reviews, and audit refer to different versions");
+    const [scanDigest, historyDigest]=await Promise.all([sha256(a.value.raw),sha256(b.value.raw)]);
+    if(scanDigest!==report.scan_sha256)throw Error("Scanner results do not match the independently audited file");
+    if(historyDigest!==report.review_history_sha256)throw Error("Saved reviews do not match the independently audited file");
+    if(report.input_prices_sha256!==freshScan.input_provenance?.sha256_uncompressed_csv)
+      throw Error("Source price checkpoint does not match the audit");
+    scan=freshScan;journal=freshJournal;
+    const provenance=scan.input_provenance;
+    if(/^stat-arb-dashboard\/data\/source-snapshots\/[0-9-]+-[a-f0-9]+\.csv\.gz$/.test(provenance.path)){
+      $("source-link").href="https://github.com/uafadelaja-creator/monte-carlo-investment-lab/blob/main/"+provenance.path;
+      $("source-link").hidden=false;
+    }
+    const legacy=report.legacy_reviews_without_preserved_input;
+    $("verification").textContent="INDEPENDENT AUDIT PASSED · "+report.all_pairs_enumerated+
+       " hypotheses checked against saved prices"+(legacy?" · "+legacy+" legacy review(s) lack source checkpoints":"");
+    $("verification").className="passed";
+    drawSummary();
+    const newest=journal.records.reduce((acc,r)=>r.review_date>acc?r.review_date:acc,"");
+    const age=(Date.now()-new Date(scan.generated_at_utc).getTime())/3600000;
+    $("last-run").textContent="Latest verified scan: "+shortDate(scan.as_of)+" · "+
+       scan.summary.pairs_tested_cointegration+" cointegration tests · Latest deep reviews: "+shortDate(newest)+
+       (age>48?" · STALE SNAPSHOT: check the run log":"")+
+       " · Scanned data are daily-close estimates, not live exchange quotes.";
+    $("last-run").classList.toggle("error",age>48);
+  }catch(error){
+    hideUnverified();
+    $("verification").textContent="UNVERIFIED · "+error.message;
+    $("verification").className="failed";
+    $("last-run").textContent="Results hidden: verification was not completed. Open the run log for details.";
+    $("last-run").classList.add("error");
+  }
 }
+async function loadRunStatus(){
+  const url="https://api.github.com/repos/uafadelaja-creator/monte-carlo-investment-lab/actions/workflows/daily-pair-discovery.yml/runs?per_page=1";
+  $("auto-refresh-label").textContent="Auto-refreshes every 2 minutes";
+  try{
+    const result=await fetch(url,{cache:"no-store",headers:{"Accept":"application/vnd.github+json"}});
+    if(!result.ok)throw Error("GitHub run status HTTP "+result.status);
+    const data=await result.json();
+    const run=data.workflow_runs?.[0];
+    if(!run)throw Error("No workflow run found");
+    const state=run.status,conclusion=run.conclusion;
+    const dot=$("run-dot");
+    const running=state==="in_progress"||state==="queued"||state==="waiting"||state==="pending";
+    const passed=state==="completed"&&conclusion==="success";
+    dot.className="live-dot "+(running?"running":passed?"passed":"failed");
+    $("run-status").textContent=running?
+      "Daily scanner "+(state==="in_progress"?"running now":"queued"):
+      passed?"Last automated scan finished successfully":"Latest scan "+(conclusion||state)+" — prior audited snapshot retained";
+    const when=new Date(run.updated_at||run.created_at);
+    $("run-explain").textContent="GitHub Actions: "+(Number.isFinite(when.getTime())?when.toLocaleString():"time unknown")+
+      ". This is a live workflow-status monitor, not streaming market prices.";
+    $("run-open").href=run.html_url;
+  }catch(error){
+    $("run-dot").className="live-dot";
+    $("run-status").textContent="Live run status unavailable";
+    $("run-explain").textContent="GitHub's public status API could not be reached ("+error.message+"). Saved research is independently checked below.";
+  }
+}
+
 function init(){
   for(const button of document.querySelectorAll(".tab")){
     button.addEventListener("click",()=>activate(button.dataset.view));
@@ -218,12 +299,18 @@ function init(){
     activate("latest");
     $("view-latest").scrollIntoView({behavior:"smooth",block:"start"});
   });
-  $("refresh").addEventListener("click",loadData);
+  $("show-scanner").addEventListener("click",()=>{
+    activate("scan");
+    $("view-scan").scrollIntoView({behavior:"smooth",block:"start"});
+  });
+  $("refresh").addEventListener("click",()=>{loadData();loadRunStatus();});
   $("history-search").addEventListener("input",historyRows);
   $("history-day").addEventListener("change",historyRows);
   $("scan-search").addEventListener("input",scanRows);
   $("scan-filter").addEventListener("change",scanRows);
   activate("latest");
   loadData().catch(err=>{$("last-run").textContent="Data request failed: "+err.message;$("last-run").classList.add("error");});
+  loadRunStatus();
+  window.setInterval(()=>{loadData();loadRunStatus();},120000);
 }
 document.addEventListener("DOMContentLoaded",init);
