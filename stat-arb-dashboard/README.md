@@ -2,6 +2,16 @@
 
 A futuristic, responsive research dashboard integrated into the [Monte Carlo Investment Lab](../README.md).
 
+## Verification, saved price inputs and live workflow status (November 17, 2026)
+
+[Daily live-status and verified scanner view](daily.html) displays the latest GitHub Actions run state, including queued/running/finished/failed, and refreshes published results automatically every two minutes while the page is open. The broad-screen tab shows the latest **completed daily-price research snapshot**, not exchange-licensed intraday live pricing; separate TradingView charts remain provider-supplied visuals only, not statistical-scanner inputs. A disconnected browser or GitHub API rate limit may prevent run-status checks; the website says so rather than pretending a scan is active.
+
+The [daily workflow](https://github.com/uafadelaja-creator/monte-carlo-investment-lab/actions/workflows/daily-pair-discovery.yml) refuses to publish its new scan until [audit_daily_scan.py](../audit_daily_scan.py) independently recalculates all available pairs (OLS fit, Z, correlation, cointegration p, BH q, full set of status gates) from the exact recorded input dataset. It checks both result-file hashes, each review's price snapshot when available, and retained paper examples. Every new run preserves a content-addressed compressed CSV under [data/source-snapshots/](data/source-snapshots/) with a SHA-256 digest of its uncompressed UTF-8 data, and publishes [daily_audit.json](data/daily_audit.json) containing the pass/fail results and hashes. Missing data are explicitly marked *unavailable*, not filled with invented readings.
+
+The browser independently checks the SHA-256 of both downloaded result JSON files against the published audit. If the audit is missing, has failed, or disagrees with the scan, the website **hides the research figures** and shows an error instead of presenting unaudited results as current. Reports from before snapshots were introduced remain in the dated archive and are conspicuously labeled **legacy without preserved price input**; an audit PASS does **not** retroactively verify them.
+
+**Limitations:** This verifies that mathematical outputs can be reproduced from the saved vendor prices. It does not independently certify Yahoo Finance historical adjustments, quote latency, corporate actions, data-vendor accuracy, investor access to short borrow, or any profitable execution. No scanner result should be called guaranteed or a validated trading signal.
+
 ## Two in-depth reviews per day — dated research journal
 
 [Open the redesigned daily research page](daily.html). The automated broad screen remains active, but the homepage now foregrounds exactly **two distinct in-depth peer reviews per UTC day**, covering qualifying watch candidates first and rotating across stocks and industries that have not yet been reviewed. The new reviews do not overwrite old ones: a dated, idempotent JSON archive at [review_history.json](data/review_history.json) retains every pair and review date.
