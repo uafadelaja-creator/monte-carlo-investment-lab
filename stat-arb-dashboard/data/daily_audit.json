@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "meaning": "Scanner arithmetic and captured price-input integrity independently rechecked. Not validation of the price provider, future performance, trading costs or executable prices.",
+  "audited_at_utc": "2026-11-17T18:49:47.802468+00:00",
+  "market_date": "2026-11-17",
+  "scan_sha256": "6e2e8bc4713f82c1bf5dbc4c2fbba6dff51689e151d73406ae91247d8c1b558c",
+  "review_history_sha256": "01044e5a0f0df290bf4ee0baf091319da3dc2251626e3f71d0cec9cabadb82c9",
+  "input_prices_sha256": "4640aa4657476bfb7442856be1f66c1adcbcb69dd2924579afd73676ede62ac6",
+  "input_file": "stat-arb-dashboard/data/source-snapshots/2026-11-17-4640aa4657476bfb.csv.gz",
+  "all_pairs_recomputed": 221,
+  "all_pairs_enumerated": 227,
+  "independently_rechecked_eg_tests": 162,
+  "review_records": 2,
+  "deep_reviews_checked_against_latest_checkpoint": 0,
+  "replay_examples_checked": 0,
+  "legacy_reviews_without_preserved_input": 2,
+  "limitations": [
+    "SHA-256 verifies exact saved historical inputs, not vendor accuracy.",
+    "Yahoo Finance historical adjusted closes are not a licensed real-time exchange feed.",
+    "The model and retrospective paper-replay logic do not prove predictive profitability.",
+    "Legacy reviews before this audit remain explicitly unverified."
+  ]
+}
