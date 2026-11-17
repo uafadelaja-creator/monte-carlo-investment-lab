@@ -1,0 +1,66 @@
+name: PAIR LAB daily pair discovery
+
+on:
+  schedule:
+    # Every calendar day, after the US equity close: 18:30 ET winter / 19:30 ET summer.
+    - cron: "30 23 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "daily_pair_scanner.py"
+      - "tests/test_daily_pair_scanner.py"
+      - ".github/workflows/daily-pair-discovery.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pairlab-daily-discovery
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout latest main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install scanner dependencies
+        run: python -m pip install -r requirements-ci.txt
+
+      - name: Test discovery math and fail-closed controls
+        run: python -m unittest tests.test_daily_pair_scanner -v
+
+      - name: Scan peer-sector pairs with fresh adjusted data
+        run: python daily_pair_scanner.py
+
+      - name: Publish reproducible scan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pairlab-daily-discovery
+          path: stat-arb-dashboard/data/daily_discovery.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Commit only validated daily research data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add stat-arb-dashboard/data/daily_discovery.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data(pairlab): refresh daily discovery research [skip ci]"
+            git push origin HEAD:main
+          else
+            echo "No new snapshot to commit"
+          fi
