@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "kind": "PAIR_LAB_EXPLORATORY_DATED_REVIEWS",
-  "updated_at_utc": "2026-11-17T18:46:54.505851+00:00",
+  "updated_at_utc": "2026-11-17T18:47:52.209347+00:00",
   "data_through": "2026-11-17",
   "reviews_per_day": 2,
   "total_reviews": 2,
@@ -187,7 +187,8 @@
         "limitations": "Selected on current data, non-overlapping examples only, simplified closes and costs; excludes real slippage, spreads, dividends, borrow recall, margin and market impact. Not an independent forward backtest."
       },
       "source": "Yahoo Finance via yfinance auto-adjusted closes; exploratory, unverified execution",
-      "risk_note": "This dated review is exploratory, not a recommendation. No independent forward P/L or executable arbitrage has been established."
+      "risk_note": "This dated review is exploratory, not a recommendation. No independent forward P/L or executable arbitrage has been established.",
+      "provenance_status": "legacy_no_preserved_price_input"
     },
     {
       "id": "2026-11-17:DUK/XEL",
@@ -396,7 +397,8 @@
         "limitations": "Selected on current data, non-overlapping examples only, simplified closes and costs; excludes real slippage, spreads, dividends, borrow recall, margin and market impact. Not an independent forward backtest."
       },
       "source": "Yahoo Finance via yfinance auto-adjusted closes; exploratory, unverified execution",
-      "risk_note": "This dated review is exploratory, not a recommendation. No independent forward P/L or executable arbitrage has been established."
+      "risk_note": "This dated review is exploratory, not a recommendation. No independent forward P/L or executable arbitrage has been established.",
+      "provenance_status": "legacy_no_preserved_price_input"
     }
   ]
 }
