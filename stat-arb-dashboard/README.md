@@ -2,6 +2,14 @@
 
 A futuristic, responsive research dashboard integrated into the [Monte Carlo Investment Lab](../README.md).
 
+## Two in-depth reviews per day — dated research journal
+
+[Open the redesigned daily research page](daily.html). The automated broad screen remains active, but the homepage now foregrounds exactly **two distinct in-depth peer reviews per UTC day**, covering qualifying watch candidates first and rotating across stocks and industries that have not yet been reviewed. The new reviews do not overwrite old ones: a dated, idempotent JSON archive at [review_history.json](data/review_history.json) retains every pair and review date.
+
+Each deep dive includes a plain-English verdict, the pair's return correlation, current residual Z-score, raw cointegration p-value, full-universe BH q-value, hedge slope, half-window slope drift and cointegration sensitivity, estimated formation-spread half-life when meaningful, a no-look-ahead Z-score sparkline, and a **retrospective** five-session example replay with next-session closing fills, ten basis points per leg per side, and three-percent hypothetical short-borrow APR. Replays are **not** prospective evidence: pair selection uses the current screen before reviewing historical examples. Their simplified economics are not executable quotes or a validated trading edge.
+
+The History tab searches reviews by ticker, sector, and date and opens any prior report. The Broad scanner tab remains available to search all 227 within-industry combinations. A second scheduled attempt on the same day cannot record duplicate reviews. Weekends and holidays still create dated reviews using the latest available session if valid price data passes freshness checks. The Actions workflow runs the tests, writes the two JSON datasets, stores run artifacts, and safely rebases the data-only commit before pushing, rather than overwriting concurrently edited source.
+
 ## Automated new-pair discovery (November 17, 2026)
 
 **[Open the daily discovery terminal](daily.html)** | **[Inspect scheduled workflow](https://github.com/uafadelaja-creator/monte-carlo-investment-lab/actions/workflows/daily-pair-discovery.yml)** | **[Latest JSON results](data/daily_discovery.json)**
