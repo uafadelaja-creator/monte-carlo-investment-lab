@@ -192,6 +192,7 @@ def review(pair: dict, prices: pd.DataFrame, as_of: str, day: str) -> dict:
         "id": day + ":" + pair["pair"],
         "review_date": day,
         "data_through": as_of,
+        "input_provenance": None,  # Filled by update_history with source snapshot.
         "pair": pair["pair"],
         "a": a, "b": b, "industry": pair["industry"],
         "classification": status,
@@ -239,6 +240,7 @@ def update_history(
     for pair in candidate_list:
         try:
             record = review(pair, prices, result["as_of"], day)
+            record["input_provenance"] = dict(result.get("input_provenance") or {}) or None
         except (ValueError, np.linalg.LinAlgError, FloatingPointError):
             # A broken review should not silently become a successful two-pair
             # day. Fail the whole workflow, preserving previously published data.
@@ -246,6 +248,13 @@ def update_history(
         reviews.append(record)
     if sum(r["review_date"] == day for r in reviews) != count:
         raise RuntimeError("Unable to complete two distinct deep reviews today; declining partial publication")
+    # Earlier reviews predate the source-snapshot requirement; mark them as
+    # legacy rather than retroactively claiming they were independently audited.
+    for item in reviews:
+        if not item.get("input_provenance"):
+            item["provenance_status"] = "legacy_no_preserved_price_input"
+        else:
+            item["provenance_status"] = "checkpoint_available_subject_to_audit"
     reviews.sort(key=lambda r: (r["review_date"], r["pair"]))
     return {
         "schema_version": 1,
