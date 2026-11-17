@@ -265,11 +265,27 @@ def main() -> None:
     tickers = sorted(set(itertools.chain.from_iterable(PEER_GROUPS.values())))
     prices = download_adjusted_close(tickers)
     result = scan(prices, now, prior)
+    # Deep reviews reuse this exact validated price download; do not fetch again.
+    # Compute both full outputs BEFORE publishing either file.
+    from pair_deep_review import LEDGER, update_history
+
+    history = json.loads(LEDGER.read_text(encoding="utf-8")) if LEDGER.exists() else None
+    reviews = update_history(result, prices, now, history)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
+    LEDGER.parent.mkdir(parents=True, exist_ok=True)
+    # Temporary files protect prior published datasets if serialization fails.
+    discovery_tmp = args.output.with_suffix(".pending.json")
+    reviews_tmp = LEDGER.with_suffix(".pending.json")
+    discovery_tmp.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    reviews_tmp.write_text(json.dumps(reviews, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    discovery_tmp.replace(args.output)
+    reviews_tmp.replace(LEDGER)
     print(json.dumps({"as_of": result["as_of"], **result["summary"],
-                      "new": result["new_qualified_pairs"]}, indent=2))
-    print(f"Saved {args.output}; educational research only.")
+                      "new": result["new_qualified_pairs"],
+                      "reviews_today": [r["pair"] for r in reviews["records"]
+                                        if r["review_date"] == now.date().isoformat()],
+                      "total_recorded_reviews": reviews["total_reviews"]}, indent=2))
+    print(f"Saved {args.output} and {LEDGER}; research only.")
 
 
 if __name__ == "__main__":
