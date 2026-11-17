@@ -31,6 +31,7 @@ jobs:
           node --check stat-arb-dashboard/charts.js
           node --check stat-arb-dashboard/plans.js
           node stat-arb-dashboard/plans_smoke.test.cjs
+          node --check stat-arb-dashboard/daily-ui.js
           node --check stat-arb-dashboard/tradingview.js
           node stat-arb-dashboard/tradingview_smoke.test.cjs
 
@@ -42,6 +43,24 @@ jobs:
 
       - name: Install independent statistical library
         run: python -m pip install -r requirements-ci.txt
+
+      - name: Test daily scanner website usability and verification gate
+        run: python -m unittest tests.test_daily_ui -v
+
+      - name: Independently verify latest saved daily discovery data
+        run: |
+          python audit_daily_scan.py --output /tmp/pairlab-recomputed-audit.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          actual=json.loads(Path("/tmp/pairlab-recomputed-audit.json").read_text())
+          published=json.loads(Path("stat-arb-dashboard/data/daily_audit.json").read_text())
+          for key in ("status", "scan_sha256", "review_history_sha256", "input_prices_sha256",
+                      "all_pairs_enumerated", "all_pairs_recomputed",
+                      "legacy_reviews_without_preserved_input"):
+              assert actual[key] == published[key], (key, actual[key], published[key])
+          print("PASS: published audit matches independent full daily recheck")
+          PY
 
       - name: Recompute entire pair universe independently
         run: >
