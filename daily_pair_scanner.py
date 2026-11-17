@@ -17,6 +17,7 @@ import math
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
@@ -117,6 +118,20 @@ def download_adjusted_close(tickers: list[str]) -> pd.DataFrame:
     prices = pd.concat(pieces, axis=1).loc[:, ~pd.concat(pieces, axis=1).columns.duplicated()]
     prices = prices.apply(pd.to_numeric, errors="coerce")
     return prices.where(np.isfinite(prices) & (prices > 0))
+
+
+def completed_daily_bars(prices: pd.DataFrame, now: datetime) -> pd.DataFrame:
+    """Exclude an in-progress U.S. equity daily candle.
+
+    A free daily bar can appear before the official session is finalized.
+    Before 17:00 in New York (conservative after-hours buffer), never
+    interpret today's vendor row as a completed close. This does not certify
+    the upstream vendor or handle every exceptional exchange calendar event.
+    """
+    ny = now.astimezone(ZoneInfo("America/New_York"))
+    if ny.hour < 17:
+        return prices.loc[prices.index.date < ny.date()].copy()
+    return prices
 
 
 def select_as_of(prices: pd.DataFrame, now: datetime) -> tuple[str, list[str]]:
@@ -239,6 +254,7 @@ def scan(prices: pd.DataFrame, now: datetime, previous: dict | None = None) -> d
             "Yahoo historical adjusted closes are vendor estimates, not certified executable quotes.",
             "No walk-forward net-of-cost/borrow/earnings validation or automatic orders.",
             "Weekends and market holidays repeat the most recent completed session.",
+            "Before 17:00 America/New_York, any current-day daily candle is excluded as potentially incomplete.",
             "New means first qualified since this daily history began, not a recommendation.",
         ],
         "summary": {
@@ -267,6 +283,7 @@ def main() -> None:
     prior = json.loads(args.output.read_text()) if args.output.exists() else {}
     tickers = sorted(set(itertools.chain.from_iterable(PEER_GROUPS.values())))
     prices = download_adjusted_close(tickers)
+    prices = completed_daily_bars(prices, now)
     result = scan(prices, now, prior)
     # Capture the exact normalized inputs used by this run, NOT a later vendor
     # download. Content-addressed snapshots never overwrite prior observations.
