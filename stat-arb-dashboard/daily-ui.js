@@ -1,7 +1,7 @@
 "use strict";
 const $ = id => document.getElementById(id);
 const DATA_BASE = "https://raw.githubusercontent.com/uafadelaja-creator/monte-carlo-investment-lab/main/stat-arb-dashboard/data/";
-const STATUS_LABELS = {research_candidate:"Research candidate",preliminary_watch:"Preliminary watch",not_qualified:"Not qualified",data_unavailable:"Data unavailable"};
+const STATUS_LABELS = {research_candidate:"Passed research checks · not a trade",preliminary_watch:"Interesting, not confirmed",not_qualified:"No strong signal",data_unavailable:"Not enough usable data"};
 let scan = null, journal = null;
 let activeView = "latest";
 
@@ -65,59 +65,105 @@ function addMetric(parent,name,value) {
   box.append(el("strong","",value),el("span","",name));
   parent.append(box);
 }
+function beginnerSummary(status) {
+  switch(status) {
+    case "research_candidate": return "This pair passed the scanner's statistical screening checks, but that does not tell us whether it would make money in the real market.";
+    case "preliminary_watch": return "Something in this pair's past prices looks interesting, but it did not pass every reliability check.";
+    case "not_qualified": return "Today's checks did not find strong enough statistical evidence to flag this pair.";
+    default: return "There isn't enough usable data to assess this pair reliably.";
+  }
+}
+function explainDetail(label, body) {
+  const node=el("details","");
+  node.append(el("summary","",label),el("p","",body));
+  return node;
+}
 function reviewCard(r) {
   const card=el("article","card");
-  const top=el("div","card-title");
-  const names=el("div","");
+  const head=el("div","card-title");
+  const names=el("div");
   names.append(el("div","pair",r.pair),el("div","sector",r.industry+" · Reviewed "+shortDate(r.review_date)));
-  top.append(names,classification(r.classification));
-  card.append(top);
+  head.append(names,classification(r.classification));
+  card.append(head);
+  card.append(el("p","verdict",beginnerSummary(r.classification)));
   if(!r.input_provenance?.sha256_uncompressed_csv){
-    card.append(el("p","provenance-warning","Archived before price checkpoints were introduced. This older review is not independently reproducible from a preserved source file."));
-  } else {
-    card.append(el("p","muted","Input snapshot retained · SHA-256 "+r.input_provenance.sha256_uncompressed_csv.slice(0,16)+"…"));
+    card.append(el("p","provenance-warning","Older review: its original price file wasn't saved, so this review cannot be independently reproduced from a preserved source file."));
   }
-  card.append(el("p","verdict",r.verdict));
-  card.append(el("div","explain",r.relative_value_explanation));
-  const stats=el("div","stat-row");
-  addMetric(stats,"90-day correlation",number(r.metrics?.correlation_90d,2));
-  addMetric(stats,"Spread Z-score",number(r.metrics?.z_score_60d));
-  addMetric(stats,"Adjusted q",number(r.metrics?.universe_fdr_q,3));
-  card.append(stats);
-  const details=el("details");
-  details.append(el("summary","","See deep analysis"));
-  const content=el("div","");
-  content.append(el("p","","Historical spread Z-score (computed with prior-day formation windows):"));
-  content.append(chart(r.z_history));
+  const why=el("details");
+  why.append(el("summary","","Why did it receive this result?"));
+  why.append(el("p","",r.verdict));
+  why.append(el("p","",r.relative_value_explanation));
   const checks=el("ul","checks");
-  const labels={cointegration:"Historical cointegration",correlation:"Return correlation",deviation:"Spread deviation",fdr:"Multiple-testing adjustment",beta_stable:"Hedge stability"};
+  const labels={
+    cointegration:"Long-run relationship test",
+    correlation:"Moved similarly recently",
+    deviation:"Unusually large gap",
+    fdr:"Passed the many-tests safeguard",
+    beta_stable:"Estimated relationship stayed stable"
+  };
   for(const [key,label] of Object.entries(labels)){
-    const good=r.gates?.[key]===true;
-    checks.append(el("li",good?"good":"bad",(good?"✓ ":"✕ ")+label));
+    const flag=r.gates?.[key]===true;
+    checks.append(el("li",flag?"good":"bad",(flag?"✓ Pass: ":"✕ Not passed: ")+label));
   }
-  content.append(checks);
+  why.append(checks);
+  why.append(el("p","","A failed check does not mean the stocks are bad companies. It means this specific pair-trading hypothesis is not fully supported by today's screening rules."));
+  card.append(why);
+
+  const facts=el("details");
+  facts.append(el("summary","","What do the numbers mean?"));
+  const stats=el("div","stat-row");
+  addMetric(stats,"Move together",number(r.metrics?.correlation_90d,2));
+  addMetric(stats,"Gap size (Z)",number(r.metrics?.z_score_60d,2));
+  addMetric(stats,"Many-tests q",number(r.metrics?.universe_fdr_q,3));
+  facts.append(stats);
+  facts.append(explainDetail("Correlation: do these stocks move together?",
+    "It compares the direction of recent daily returns. Values close to +1 indicate more similar movements. High correlation is not enough to prove a trading opportunity."));
+  facts.append(explainDetail("Z-score: how unusual is their gap?",
+    "This measures how far the modeled relationship has moved from its recent average, expressed in units of its past spread variation. Around zero is common; beyond ±2 is unusual. It can still move farther away."));
+  facts.append(explainDetail("p-value and q-value: how reliable is the past pattern?",
+    "The p-value is a historical statistical test of a long-run relationship, NOT the chance of profit. The q-value adjusts for screening many stock combinations. Neither proves that a trade will make money."));
   const m=r.metrics||{};
-  content.append(el("p","",
-    "Cointegration p: "+number(m.engle_granger_p,4)+" · Hedge beta: "+number(m.hedge_beta_log_price,3)+
-    " · Beta drift: "+pct(m.beta_drift_pct)+" · Estimated half-life: "+
-    (m.half_life_sessions_estimate===null?"not estimable":number(m.half_life_sessions_estimate,1)+" sessions")));
+  facts.append(el("p","",
+    "Recorded figures · Historical p-value: "+number(m.engle_granger_p,4)+
+    " · q-value: "+number(m.universe_fdr_q,4)+
+    " · beta: "+number(m.hedge_beta_log_price,3)+
+    " · beta drift: "+pct(m.beta_drift_pct)+
+    " · estimated half-life: "+(typeof m.half_life_sessions_estimate==="number"?number(m.half_life_sessions_estimate,1)+" trading sessions":"not estimable")));
+  facts.append(explainDetail("What about beta, drift and half-life?",
+    "Beta is the fitted historical price relationship. Drift checks whether that estimate changed during the sample. Half-life is an estimate of how fast the fitted gap used to fade; it is not a promise of when a position could close."));
   if(Array.isArray(m.half_window_eg_p)){
-    content.append(el("p","","Sensitivity: first 126-session p = "+number(m.half_window_eg_p[0],4)+
-      "; last 126-session p = "+number(m.half_window_eg_p[1],4)+". Short-window results can be unstable."));
+    facts.append(el("p","",
+      "Short-window stability check: first 126-session p = "+number(m.half_window_eg_p[0],4)+
+      "; last 126-session p = "+number(m.half_window_eg_p[1],4)+
+      ". Short-window relationships may be unstable."));
   }
+  card.append(facts);
+
+  const past=el("details");
+  past.append(el("summary","","See a chart and historical examples"));
+  past.append(el("p","","Historical modeled gap. This is not a live price chart or a signal to trade."));
+  past.append(chart(r.z_history));
   const rep=r.retrospective_replay||{};
-  const box=el("div","replay");
-  box.append(el("strong","","Retrospective paper replay · NOT a validated edge"));
-  box.append(el("p","",
-    (rep.events||0)+" non-overlapping historical examples · "+
-    "Hypothetical cumulative net return: "+pct(rep.cumulative_net_return_pct,2)+
-    " · Win rate: "+pct(rep.win_rate_pct,1)+
-    " · Max drawdown: "+pct(rep.max_drawdown_pct,2)+
-    ". Assumes five sessions per trade, next-session closing entries, fixed costs and short borrow."));
-  box.append(el("p","",rep.limitations||"Not independently validated."));
-  content.append(box);
-  content.append(el("p","",r.risk_note||"Educational analysis only."));
-  details.append(content);card.append(details);
+  const replay=el("div","replay");
+  replay.append(el("strong","","Past paper examples — not real trades"));
+  replay.append(el("p","",
+    (rep.events||0)+" historical example(s). Hypothetical cumulative net return: "+
+    pct(rep.cumulative_net_return_pct,2)+" · win rate: "+pct(rep.win_rate_pct,1)+
+    " · largest modeled drawdown: "+pct(rep.max_drawdown_pct,2)+
+    ". Where available, the example uses a five-session hold, assumed next-session closing entry and simplified costs."));
+  replay.append(el("p","",rep.limitations||"This is not an independent walk-forward test or a return forecast."));
+  past.append(replay);card.append(past);
+
+  const evidence=el("details");
+  evidence.append(el("summary","","Where did this information come from?"));
+  if(r.input_provenance?.sha256_uncompressed_csv){
+    evidence.append(el("p","","Input prices were saved for this review. SHA-256 (source fingerprint): "+r.input_provenance.sha256_uncompressed_csv));
+  }else{
+    evidence.append(el("p","","This older review predates the saved-price-input requirement. It remains in the journal with an explicit verification limitation."));
+  }
+  evidence.append(el("p","",r.risk_note||"Research only, not advice."));
+  evidence.append(el("p","","Even independently recomputed model numbers may be inaccurate if the external price vendor's data are wrong."));
+  card.append(evidence);
   return card;
 }
 function latestReviews() {
@@ -164,13 +210,26 @@ function scanRows() {
   const term=$("scan-search").value.trim().toUpperCase(),status=$("scan-filter").value;
   const visible=scan.pairs.filter(r=>(status==="all"||r.status===status)&&
       (r.pair+" "+r.industry).toUpperCase().includes(term));
-  $("scan-count").textContent=visible.length+" / "+scan.pairs.length;
+  $("scan-count").textContent=visible.length+" / "+scan.pairs.length+" pairs shown";
   $("scan-empty").hidden=visible.length>0;
   for(const p of visible){
     const tr=el("tr");
-    tr.append(el("td","paircell",p.pair),el("td","muted",p.industry),el("td","",number(p.correlation,2)),
-              el("td","",number(p.z,2)),el("td","",number(p.p,4)),el("td","",number(p.q,4)));
-    const status=el("td");status.append(classification(p.status));tr.append(status);body.append(tr);
+    tr.append(el("td","paircell",p.pair),el("td","muted",p.industry));
+    const result=el("td");result.append(classification(p.status));tr.append(result);
+    const info=el("td");
+    const details=el("details");
+    details.append(el("summary","","Why?"));
+    details.append(el("p","",beginnerSummary(p.status)));
+    if(p.status==="data_unavailable"){
+      details.append(el("p","","Some usable historical prices were missing. No statistics have been invented."));
+    }else{
+      details.append(el("p","","Correlation (how similarly they moved): "+number(p.correlation,2)+
+        " · Gap Z-score: "+number(p.z,2)+
+        " · Relationship p-value: "+number(p.p,4)+
+        " · Many-tests q-value: "+number(p.q,4)+
+        ". These are historical statistics, not the probability of a profitable trade."));
+    }
+    info.append(details);tr.append(info);body.append(tr);
   }
 }
 function drawSummary() {
@@ -244,8 +303,8 @@ async function loadData(){
       $("source-link").hidden=false;
     }
     const legacy=report.legacy_reviews_without_preserved_input;
-    $("verification").textContent="INDEPENDENT AUDIT PASSED · "+report.all_pairs_enumerated+
-       " hypotheses checked against saved prices"+(legacy?" · "+legacy+" legacy review(s) lack source checkpoints":"");
+    $("verification").textContent="Calculations independently checked · "+report.all_pairs_enumerated+
+       " pairs reviewed against saved vendor prices"+(legacy?" · "+legacy+" older reviews lack original price files":"");
     $("verification").className="passed";
     drawSummary();
     const newest=journal.records.reduce((acc,r)=>r.review_date>acc?r.review_date:acc,"");
@@ -257,7 +316,7 @@ async function loadData(){
     $("last-run").classList.toggle("error",age>48);
   }catch(error){
     hideUnverified();
-    $("verification").textContent="UNVERIFIED · "+error.message;
+    $("verification").textContent="Data not verified — results hidden · "+error.message;
     $("verification").className="failed";
     $("last-run").textContent="Results hidden: verification was not completed. Open the run log for details.";
     $("last-run").classList.add("error");
