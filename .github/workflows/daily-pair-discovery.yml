@@ -10,6 +10,8 @@ on:
     paths:
       - "daily_pair_scanner.py"
       - "pair_deep_review.py"
+      - "audit_daily_scan.py"
+      - "tests/test_daily_audit.py"
       - "tests/test_daily_pair_scanner.py"
       - "tests/test_pair_deep_review.py"
       - "tests/test_daily_ui.py"
@@ -47,10 +49,14 @@ jobs:
           python -m unittest tests.test_daily_pair_scanner -v
           python -m unittest tests.test_pair_deep_review -v
           python -m unittest tests.test_daily_ui -v
+          python -m unittest tests.test_daily_audit -v
           node --check stat-arb-dashboard/daily-ui.js
 
       - name: Scan peer-sector pairs with fresh adjusted data
         run: python daily_pair_scanner.py
+
+      - name: Independently recompute all model outputs and certify input provenance
+        run: python audit_daily_scan.py
 
       - name: Publish reproducible scan artifact
         uses: actions/upload-artifact@v4
@@ -59,6 +65,8 @@ jobs:
           path: |
             stat-arb-dashboard/data/daily_discovery.json
             stat-arb-dashboard/data/review_history.json
+            stat-arb-dashboard/data/daily_audit.json
+            stat-arb-dashboard/data/source-snapshots/*.csv.gz
           if-no-files-found: error
           retention-days: 30
 
@@ -66,7 +74,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add stat-arb-dashboard/data/daily_discovery.json stat-arb-dashboard/data/review_history.json
+          git add stat-arb-dashboard/data/daily_discovery.json stat-arb-dashboard/data/review_history.json stat-arb-dashboard/data/daily_audit.json stat-arb-dashboard/data/source-snapshots/
           if ! git diff --cached --quiet; then
             git commit -m "data(pairlab): refresh daily discovery research [skip ci]"
             # Source/docs may have advanced while the market-data scan ran.
