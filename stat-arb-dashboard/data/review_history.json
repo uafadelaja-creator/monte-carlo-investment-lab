@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "kind": "PAIR_LAB_EXPLORATORY_DATED_REVIEWS",
-  "updated_at_utc": "2026-11-20T04:06:19.741590+00:00",
-  "data_through": "2026-11-19",
+  "updated_at_utc": "2026-11-21T04:06:41.107198+00:00",
+  "data_through": "2026-11-20",
   "reviews_per_day": 2,
-  "total_reviews": 8,
-  "unique_pairs_reviewed": 8,
-  "review_dates": 4,
+  "total_reviews": 10,
+  "unique_pairs_reviewed": 10,
+  "review_dates": 5,
   "records": [
     {
       "id": "2026-11-17:AVGO/ON",
@@ -1657,6 +1657,436 @@
             "net_return_pct": -1.398794
           }
         ],
+        "limitations": "Selected on current data, non-overlapping examples only, simplified closes and costs; excludes real slippage, spreads, dividends, borrow recall, margin and market impact. Not an independent forward backtest."
+      },
+      "source": "Yahoo Finance via yfinance auto-adjusted closes; exploratory, unverified execution",
+      "risk_note": "This dated review is exploratory, not a recommendation. No independent forward P/L or executable arbitrage has been established.",
+      "provenance_status": "checkpoint_available_subject_to_audit"
+    },
+    {
+      "id": "2026-11-21:GS/MS",
+      "review_date": "2026-11-21",
+      "data_through": "2026-11-20",
+      "input_provenance": {
+        "path": "stat-arb-dashboard/data/source-snapshots/2026-11-20-944a4589a68179dd.csv.gz",
+        "sha256_uncompressed_csv": "944a4589a68179dd6000643ab333fecdaf51fb8264d4800604c033e2a3aaa6b2",
+        "market_date": "2026-11-20",
+        "ticker_count": 75,
+        "calendar_rows": 501,
+        "timestamp_utc": "2026-11-21T04:06:41.107198+00:00",
+        "provider": "Yahoo Finance via yfinance auto_adjust=True; third-party data not independently certified",
+        "method": "Normalized price input downloaded once for scanning and deep reviews; CSV gzip checksum uses uncompressed UTF-8"
+      },
+      "pair": "GS/MS",
+      "a": "GS",
+      "b": "MS",
+      "industry": "Banks",
+      "classification": "not_qualified",
+      "verdict": "Does not pass the research screening gates. No trade is justified from this model.",
+      "relative_value_explanation": "GS has fallen relative to MS in the fitted spread; a mean-reversion hypothesis would buy GS and short MS.",
+      "metrics": {
+        "correlation_90d": 0.9277,
+        "z_score_60d": -2.4577,
+        "engle_granger_p": 0.05179893,
+        "universe_fdr_q": 1.0,
+        "hedge_beta_log_price": 0.82052,
+        "beta_drift_pct": 25.9,
+        "half_life_sessions_estimate": 8.225795,
+        "half_window_eg_p": [
+          0.345874,
+          0.088502
+        ]
+      },
+      "gates": {
+        "cointegration": false,
+        "correlation": true,
+        "deviation": true,
+        "fdr": false,
+        "beta_stable": true
+      },
+      "z_history": [
+        {
+          "date": "2026-10-08",
+          "z": -1.388635
+        },
+        {
+          "date": "2026-10-09",
+          "z": -1.281435
+        },
+        {
+          "date": "2026-10-12",
+          "z": -1.336988
+        },
+        {
+          "date": "2026-10-13",
+          "z": -0.651639
+        },
+        {
+          "date": "2026-10-14",
+          "z": -0.142439
+        },
+        {
+          "date": "2026-10-15",
+          "z": 0.496064
+        },
+        {
+          "date": "2026-10-16",
+          "z": 0.35857
+        },
+        {
+          "date": "2026-10-19",
+          "z": 0.654436
+        },
+        {
+          "date": "2026-10-20",
+          "z": 0.737034
+        },
+        {
+          "date": "2026-10-21",
+          "z": 0.137089
+        },
+        {
+          "date": "2026-10-22",
+          "z": 0.109547
+        },
+        {
+          "date": "2026-10-23",
+          "z": 0.349735
+        },
+        {
+          "date": "2026-10-26",
+          "z": 0.394746
+        },
+        {
+          "date": "2026-10-27",
+          "z": 0.6745
+        },
+        {
+          "date": "2026-10-28",
+          "z": 0.664169
+        },
+        {
+          "date": "2026-10-29",
+          "z": 0.894044
+        },
+        {
+          "date": "2026-10-30",
+          "z": -0.140126
+        },
+        {
+          "date": "2026-11-02",
+          "z": -0.268101
+        },
+        {
+          "date": "2026-11-03",
+          "z": -0.571583
+        },
+        {
+          "date": "2026-11-04",
+          "z": -0.576892
+        },
+        {
+          "date": "2026-11-05",
+          "z": -1.486856
+        },
+        {
+          "date": "2026-11-06",
+          "z": -1.368905
+        },
+        {
+          "date": "2026-11-09",
+          "z": -0.050008
+        },
+        {
+          "date": "2026-11-10",
+          "z": 0.102195
+        },
+        {
+          "date": "2026-11-11",
+          "z": 0.412707
+        },
+        {
+          "date": "2026-11-12",
+          "z": -0.108162
+        },
+        {
+          "date": "2026-11-13",
+          "z": -0.313714
+        },
+        {
+          "date": "2026-11-16",
+          "z": -0.637041
+        },
+        {
+          "date": "2026-11-17",
+          "z": -1.057568
+        },
+        {
+          "date": "2026-11-18",
+          "z": -0.649897
+        },
+        {
+          "date": "2026-11-19",
+          "z": -0.721587
+        },
+        {
+          "date": "2026-11-20",
+          "z": -2.457729
+        }
+      ],
+      "retrospective_replay": {
+        "label": "RETROSPECTIVE EXAMPLES ONLY - current pair selection uses later data",
+        "sessions_examined": 150,
+        "events": 5,
+        "hold_sessions": 5,
+        "entry": "next session closing price after close-based signal",
+        "exit": "closing price five sessions after entry",
+        "entry_z": 2,
+        "cost_assumption_bps_per_leg_per_side": 10,
+        "borrow_apr_assumption_pct": 3.0,
+        "equal_dollar_legs": true,
+        "cumulative_net_return_pct": 1.992955,
+        "max_drawdown_pct": -1.058625,
+        "win_rate_pct": 40.0,
+        "examples": [
+          {
+            "signal_date": "2026-04-21",
+            "entry_date": "2026-04-22",
+            "exit_date": "2026-04-29",
+            "z_at_signal": -2.193108,
+            "direction": "LONG_A_SHORT_B",
+            "gross_return_pct": -0.524913,
+            "net_return_pct": -0.754675
+          },
+          {
+            "signal_date": "2026-04-30",
+            "entry_date": "2026-05-01",
+            "exit_date": "2026-05-08",
+            "z_at_signal": -2.118632,
+            "direction": "LONG_A_SHORT_B",
+            "gross_return_pct": -0.076499,
+            "net_return_pct": -0.306261
+          },
+          {
+            "signal_date": "2026-07-07",
+            "entry_date": "2026-07-08",
+            "exit_date": "2026-07-15",
+            "z_at_signal": -2.495726,
+            "direction": "LONG_A_SHORT_B",
+            "gross_return_pct": 3.542381,
+            "net_return_pct": 3.312619
+          },
+          {
+            "signal_date": "2026-07-16",
+            "entry_date": "2026-07-17",
+            "exit_date": "2026-07-24",
+            "z_at_signal": 2.069935,
+            "direction": "SHORT_A_LONG_B",
+            "gross_return_pct": -0.04938,
+            "net_return_pct": -0.279142
+          },
+          {
+            "signal_date": "2026-09-16",
+            "entry_date": "2026-09-17",
+            "exit_date": "2026-09-24",
+            "z_at_signal": -2.622977,
+            "direction": "LONG_A_SHORT_B",
+            "gross_return_pct": 0.288001,
+            "net_return_pct": 0.058239
+          }
+        ],
+        "limitations": "Selected on current data, non-overlapping examples only, simplified closes and costs; excludes real slippage, spreads, dividends, borrow recall, margin and market impact. Not an independent forward backtest."
+      },
+      "source": "Yahoo Finance via yfinance auto-adjusted closes; exploratory, unverified execution",
+      "risk_note": "This dated review is exploratory, not a recommendation. No independent forward P/L or executable arbitrage has been established.",
+      "provenance_status": "checkpoint_available_subject_to_audit"
+    },
+    {
+      "id": "2026-11-21:RTX/GD",
+      "review_date": "2026-11-21",
+      "data_through": "2026-11-20",
+      "input_provenance": {
+        "path": "stat-arb-dashboard/data/source-snapshots/2026-11-20-944a4589a68179dd.csv.gz",
+        "sha256_uncompressed_csv": "944a4589a68179dd6000643ab333fecdaf51fb8264d4800604c033e2a3aaa6b2",
+        "market_date": "2026-11-20",
+        "ticker_count": 75,
+        "calendar_rows": 501,
+        "timestamp_utc": "2026-11-21T04:06:41.107198+00:00",
+        "provider": "Yahoo Finance via yfinance auto_adjust=True; third-party data not independently certified",
+        "method": "Normalized price input downloaded once for scanning and deep reviews; CSV gzip checksum uses uncompressed UTF-8"
+      },
+      "pair": "RTX/GD",
+      "a": "RTX",
+      "b": "GD",
+      "industry": "Defense",
+      "classification": "not_qualified",
+      "verdict": "Does not pass the research screening gates. No trade is justified from this model.",
+      "relative_value_explanation": "The modeled spread is inside the usual \u00b12 standard-deviation observation band; no fresh divergence threshold is met.",
+      "metrics": {
+        "correlation_90d": 0.71204,
+        "z_score_60d": 0.658,
+        "engle_granger_p": 0.09570134,
+        "universe_fdr_q": 1.0,
+        "hedge_beta_log_price": 1.11382,
+        "beta_drift_pct": 13.4,
+        "half_life_sessions_estimate": 10.051807,
+        "half_window_eg_p": [
+          0.379692,
+          0.318582
+        ]
+      },
+      "gates": {
+        "cointegration": false,
+        "correlation": false,
+        "deviation": false,
+        "fdr": false,
+        "beta_stable": true
+      },
+      "z_history": [
+        {
+          "date": "2026-10-08",
+          "z": 1.486328
+        },
+        {
+          "date": "2026-10-09",
+          "z": 1.316198
+        },
+        {
+          "date": "2026-10-12",
+          "z": 0.791835
+        },
+        {
+          "date": "2026-10-13",
+          "z": 0.417516
+        },
+        {
+          "date": "2026-10-14",
+          "z": 0.81201
+        },
+        {
+          "date": "2026-10-15",
+          "z": 0.461493
+        },
+        {
+          "date": "2026-10-16",
+          "z": 1.028197
+        },
+        {
+          "date": "2026-10-19",
+          "z": 1.034978
+        },
+        {
+          "date": "2026-10-20",
+          "z": 0.718268
+        },
+        {
+          "date": "2026-10-21",
+          "z": -0.005761
+        },
+        {
+          "date": "2026-10-22",
+          "z": -0.392317
+        },
+        {
+          "date": "2026-10-23",
+          "z": -1.434862
+        },
+        {
+          "date": "2026-10-26",
+          "z": -0.856525
+        },
+        {
+          "date": "2026-10-27",
+          "z": -1.393508
+        },
+        {
+          "date": "2026-10-28",
+          "z": -0.775095
+        },
+        {
+          "date": "2026-10-29",
+          "z": -3.243065
+        },
+        {
+          "date": "2026-10-30",
+          "z": -3.23481
+        },
+        {
+          "date": "2026-11-02",
+          "z": -2.207833
+        },
+        {
+          "date": "2026-11-03",
+          "z": -1.975964
+        },
+        {
+          "date": "2026-11-04",
+          "z": -1.685848
+        },
+        {
+          "date": "2026-11-05",
+          "z": -1.998605
+        },
+        {
+          "date": "2026-11-06",
+          "z": -2.199136
+        },
+        {
+          "date": "2026-11-09",
+          "z": -1.562656
+        },
+        {
+          "date": "2026-11-10",
+          "z": -1.331273
+        },
+        {
+          "date": "2026-11-11",
+          "z": -0.966399
+        },
+        {
+          "date": "2026-11-12",
+          "z": -1.033452
+        },
+        {
+          "date": "2026-11-13",
+          "z": -1.010257
+        },
+        {
+          "date": "2026-11-16",
+          "z": -1.390898
+        },
+        {
+          "date": "2026-11-17",
+          "z": 0.207598
+        },
+        {
+          "date": "2026-11-18",
+          "z": 1.219904
+        },
+        {
+          "date": "2026-11-19",
+          "z": 0.348583
+        },
+        {
+          "date": "2026-11-20",
+          "z": 0.657984
+        }
+      ],
+      "retrospective_replay": {
+        "label": "RETROSPECTIVE EXAMPLES ONLY - current pair selection uses later data",
+        "sessions_examined": 150,
+        "events": 0,
+        "hold_sessions": 5,
+        "entry": "next session closing price after close-based signal",
+        "exit": "closing price five sessions after entry",
+        "entry_z": 2,
+        "cost_assumption_bps_per_leg_per_side": 10,
+        "borrow_apr_assumption_pct": 3.0,
+        "equal_dollar_legs": true,
+        "cumulative_net_return_pct": null,
+        "max_drawdown_pct": null,
+        "win_rate_pct": null,
+        "examples": [],
         "limitations": "Selected on current data, non-overlapping examples only, simplified closes and costs; excludes real slippage, spreads, dividends, borrow recall, margin and market impact. Not an independent forward backtest."
       },
       "source": "Yahoo Finance via yfinance auto-adjusted closes; exploratory, unverified execution",
