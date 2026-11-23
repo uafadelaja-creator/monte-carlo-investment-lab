@@ -5,13 +5,13 @@
     "KO",
     "PEP"
   ],
-  "market_data": "data/stat_arb_2026-11-15/adjusted_close.csv",
+  "market_data": "data/stat_arb_2026-11-22/adjusted_close.csv",
   "download_manifest": {
     "provider": "Yahoo Finance through yfinance (unofficial; exploratory research only)",
     "source_url": "https://ranaroussi.github.io/yfinance/",
-    "downloaded_utc": "2026-11-16T00:17:56.447907+00:00",
+    "downloaded_utc": "2026-11-23T00:11:01.939921+00:00",
     "requested_start": "2015-01-01",
-    "requested_end_exclusive": "2026-11-16",
+    "requested_end_exclusive": "2026-11-23",
     "tickers": [
       "V",
       "MA",
@@ -26,9 +26,9 @@
     ],
     "model_input": "adjusted_close.csv",
     "price_basis": "Adjusted Close approximates total return after vendor corporate-action adjustments; it is not a historical executable fill price. raw_close.csv is audit context only.",
-    "rows": 2985,
+    "rows": 2990,
     "earliest_date": "2015-01-02",
-    "latest_date": "2026-11-13",
+    "latest_date": "2026-11-20",
     "missing_per_ticker": {
       "V": 0,
       "MA": 0,
@@ -42,12 +42,12 @@
       "XLE": 0
     },
     "file_sha256": {
-      "adjusted_close.csv": "e0501dc0e1eba7d5773285539a3fbfc9d46397b5f1ec6b53c5cb54ca19017d46",
-      "raw_close.csv": "edc61a76a9aea5632ee28e142065895acce763515cff1b5507890f7db510ef59",
-      "raw_open.csv": "f2f13abcdb2d66f9e455273f1e46727f81da6ad5c39957dee5eb178af4a2f324",
-      "raw_high.csv": "36d7331f170cf29723d6f95986ea00c5592a71b973055469f89a9b150a4313ed",
-      "raw_low.csv": "f959d8319f3a27638e0f533ca90fa52f7bea784ad428c9cf035e4ff2e4d874ed",
-      "volume.csv": "bf1889a3c6d4a2e32fa3408895568c095e44bfa94bd7e7c51d403f4a402ee388"
+      "adjusted_close.csv": "afdac5901ce349c56f4ba65bcb8b827bddcea294c10adbea871f9282366727a3",
+      "raw_close.csv": "775c8934849b3a78b27606057ce3a32ad212e64679288f8806ac7391222cd431",
+      "raw_open.csv": "4aa9bc1999425f463a5746d0426614512d42b0aa2fc4bf1ce1064e13db787524",
+      "raw_high.csv": "512bea18100a89dfc4d724a1728873b81e32216a42096a315ec7490ca365f00f",
+      "raw_low.csv": "cbdd02782157a7785954da52e01705344ad62eb3fe0d0bba1e663f6d643b38d5",
+      "volume.csv": "11519aeb2faa297c798a028e9e296daaef32477a6ff1c2126a2a76a315fb1157"
     },
     "warnings": [],
     "limitations": [
@@ -61,7 +61,7 @@
     ]
   },
   "test_start": "2023-01-03",
-  "last_test_session": "2026-11-13",
+  "last_test_session": "2026-11-20",
   "settings": {
     "formation_days": 252,
     "z_lookback": 60,
@@ -76,7 +76,7 @@
     "price_basis": "vendor-adjusted close; total-return approximation, not executable quote"
   },
   "strategy_net": {
-    "n_sessions": 971,
+    "n_sessions": 976,
     "cumulative_return": 0.0,
     "cagr": 0.0,
     "annualized_volatility": 0.0,
@@ -92,34 +92,34 @@
   },
   "benchmarks": {
     "SPY": {
-      "n_sessions": 971,
-      "cumulative_return": 1.0680834893721367,
-      "cagr": 0.20753075516540798,
-      "annualized_volatility": 0.15043828937223866,
-      "max_drawdown": -0.1875525065993785,
-      "sharpe_rf_0": 1.3288245456365353,
-      "sortino_rf_0": 1.8022199977303897,
-      "profitable_day_fraction": 0.5592173017507724
+      "n_sessions": 976,
+      "cumulative_return": 0.8910946008535132,
+      "cagr": 0.17881717594616298,
+      "annualized_volatility": 0.1520392022659617,
+      "max_drawdown": -0.18755242410696293,
+      "sharpe_rf_0": 1.158057388487699,
+      "sortino_rf_0": 1.5512887679161107,
+      "profitable_day_fraction": 0.5563524590163934
     },
     "XLP": {
-      "n_sessions": 971,
-      "cumulative_return": 0.3689369303910761,
-      "cagr": 0.08491342741858365,
-      "annualized_volatility": 0.12967958691732676,
-      "max_drawdown": -0.13365466898983036,
-      "sharpe_rf_0": 0.6932979782117799,
-      "sortino_rf_0": 1.1290456166756662,
-      "profitable_day_fraction": 0.5108135942327497
+      "n_sessions": 976,
+      "cumulative_return": 0.3409210993571725,
+      "cagr": 0.07868613081352427,
+      "annualized_volatility": 0.12978258890085378,
+      "max_drawdown": -0.13365496485278594,
+      "sharpe_rf_0": 0.6484846423831655,
+      "sortino_rf_0": 1.0550582622184739,
+      "profitable_day_fraction": 0.5102459016393442
     }
   },
   "risk_adjusted_comparisons": {
     "SPY": {
-      "information_ratio_rf_0": -1.328824545636535,
+      "information_ratio_rf_0": -1.1580573884876988,
       "volatility_ratio_strategy_to_benchmark": 0.0,
       "note": "Descriptive risk adjustment only; neither series is leverage-matched."
     },
     "XLP": {
-      "information_ratio_rf_0": -0.6932979782117797,
+      "information_ratio_rf_0": -0.6484846423831655,
       "volatility_ratio_strategy_to_benchmark": 0.0,
       "note": "Descriptive risk adjustment only; neither series is leverage-matched."
     }

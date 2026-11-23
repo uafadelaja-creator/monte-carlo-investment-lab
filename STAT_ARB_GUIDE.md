@@ -1,4 +1,4 @@
-# Historical data + statistical-arbitrage research (v0.9)
+# Historical data + statistical-arbitrage research (v0.10)
 
 This empirical module is separate from the original assumption-driven `simulate.py`.
 It tests predeclared pairs and does not generate live trade alerts or assert alpha.
@@ -211,6 +211,31 @@ the next completed session exactly once and remains idempotent on later runs.
 The separate provisional 18-pair PAIR//LAB screen passes its audits, but it is
 not part of the frozen confirmatory protocol and did not select these results.
 
+## Sequential update, 22 November 2026
+
+Five additional completed sessions extended the frozen holdout through
+2026-11-20. No pair generated a new entry, and all forward states remained flat.
+V/MA ended at Z = −1.18 with a 0.652 trailing cointegration p-value. XOM/CVX
+ended at Z = −1.95 with p = 0.011—close to, but still inside, the unchanged ±2.0
+entry gate. KO/PEP again had no valid current estimate. No next-session execution
+audit is pending.
+
+The holdout remains underpowered: V/MA has two entries and −0.005% net, KO/PEP
+has none, and XOM/CVX has one and −2.29% net. The 36-month moving-block loss
+frequencies are 45.01% (Monte Carlo 95% interval 44.58%–45.45%) for V/MA and
+79.43% (79.08%–79.78%) for XOM/CVX. KO/PEP's 0% remains inactivity.
+
+The wider PAIR//LAB discovery layer is separate. Its 20 November snapshot covered
+75 stocks (74 current), enumerated 227 same-industry pairs, ran 164 cointegration
+tests, and found zero candidates passing the combined gates or FDR control. The
+independent audit recomputed 221 available pair rows from the saved input and
+passed; this checks arithmetic and provenance hashes, not vendor accuracy or
+future profitability.
+
+Forward-audit tests now cover event policy directly: EXIT observations never
+create next-session resolutions, while REVERSAL observations resolve exactly once
+and remain idempotent. The full suite contains 43 passing tests.
+
 ## Roadmap
 
 1. Continue both frozen ledgers without treating weekly runs as independent tests.
@@ -220,6 +245,8 @@ not part of the frozen confirmatory protocol and did not select these results.
    available.
 4. Accumulate enough prospective events before evaluating execution slippage or
    considering any real-money use.
-5. Add a CI test fixture for an EXIT/REVERSAL after a resolved entry, without
-   changing the frozen economic parameters.
+5. Add a multi-session state-transition fixture covering entry → resolution →
+   exit or reversal inside one continuous hash chain.
+6. Continue forward-only daily discovery records until qualified candidates exist;
+   only then define and freeze an outcome evaluation before observing returns.
 

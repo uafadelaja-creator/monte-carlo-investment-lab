@@ -26,6 +26,74 @@ class ForwardAuditTests(unittest.TestCase):
             "execution_status": "not_applicable",
         }
 
+    def _write_lifecycle_fixture(self, root: Path, signal_sides=(1, 1)):
+        results = root / "results"
+        data = root / "data"
+        results.mkdir()
+        data.mkdir()
+        settings = {
+            "formation_days": 252,
+            "z_lookback": 60,
+            "refit_every_days": 21,
+            "entry_z": 2.0,
+            "exit_z": 0.5,
+            "stop_z": 3.5,
+            "cointegration_max_p": 0.05,
+            "turnover_cost_bps_per_notional_dollar": 10.0,
+            "hypothetical_short_borrow_apr": 0.03,
+            "execution": "signal after close T; modeled fill at close T+1",
+            "price_basis": "vendor-adjusted close",
+        }
+        report = {
+            "pair": ["V", "MA"],
+            "test_start": "2023-01-03",
+            "settings": settings,
+        }
+        (results / "V_MA_report.json").write_text(
+            json.dumps(report), encoding="utf-8"
+        )
+        dates = pd.to_datetime(["2026-11-13", "2026-11-16"])
+        daily = pd.DataFrame(
+            {
+                "signal_side": signal_sides,
+                "hedge_beta": [1.5, 1.5],
+                "zscore": [-2.1, -2.2],
+                "cointegration_p": [0.04, 0.04],
+            },
+            index=dates,
+        )
+        daily.to_csv(results / "V_MA_daily.csv")
+        adjusted = pd.DataFrame(
+            {"V": [100.0, 101.0], "MA": [200.0, 202.0]}, index=dates
+        )
+        market_frames = {
+            "adjusted_close": adjusted,
+            "raw_open": adjusted - 0.5,
+            "raw_high": adjusted + 1.0,
+            "raw_low": adjusted - 1.0,
+            "raw_close": adjusted,
+            "volume": pd.DataFrame(
+                {"V": [1_000_000, 1_100_000], "MA": [900_000, 950_000]},
+                index=dates,
+            ),
+        }
+        for name, frame in market_frames.items():
+            frame.to_csv(data / f"{name}.csv")
+        price_hash = hashlib.sha256(
+            (data / "adjusted_close.csv").read_bytes()
+        ).hexdigest()
+        (data / "download_manifest.json").write_text(
+            json.dumps(
+                {
+                    "latest_date": "2026-11-16",
+                    "file_sha256": {"adjusted_close.csv": price_hash},
+                }
+            ),
+            encoding="utf-8",
+        )
+        protocol, protocol_sha = audit._protocol({"V/MA": report})
+        return results, data, protocol, protocol_sha, price_hash
+
     def test_append_is_idempotent_and_chain_valid(self):
         ledger = audit.append_rows(pd.DataFrame(), [self._row()])
         again = audit.append_rows(ledger, [self._row()])
@@ -61,74 +129,9 @@ class ForwardAuditTests(unittest.TestCase):
     def test_entry_resolves_once_on_next_completed_session(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            results = root / "results"
-            data = root / "data"
-            results.mkdir()
-            data.mkdir()
-
-            settings = {
-                "formation_days": 252,
-                "z_lookback": 60,
-                "refit_every_days": 21,
-                "entry_z": 2.0,
-                "exit_z": 0.5,
-                "stop_z": 3.5,
-                "cointegration_max_p": 0.05,
-                "turnover_cost_bps_per_notional_dollar": 10.0,
-                "hypothetical_short_borrow_apr": 0.03,
-                "execution": "signal after close T; modeled fill at close T+1",
-                "price_basis": "vendor-adjusted close",
-            }
-            report = {
-                "pair": ["V", "MA"],
-                "test_start": "2023-01-03",
-                "settings": settings,
-            }
-            (results / "V_MA_report.json").write_text(
-                json.dumps(report), encoding="utf-8"
+            results, data, protocol, protocol_sha, price_hash = (
+                self._write_lifecycle_fixture(root)
             )
-            dates = pd.to_datetime(["2026-11-13", "2026-11-16"])
-            daily = pd.DataFrame(
-                {
-                    "signal_side": [1, 1],
-                    "hedge_beta": [1.5, 1.5],
-                    "zscore": [-2.1, -2.2],
-                    "cointegration_p": [0.04, 0.04],
-                },
-                index=dates,
-            )
-            daily.to_csv(results / "V_MA_daily.csv")
-
-            adjusted = pd.DataFrame(
-                {"V": [100.0, 101.0], "MA": [200.0, 202.0]}, index=dates
-            )
-            market_frames = {
-                "adjusted_close": adjusted,
-                "raw_open": adjusted - 0.5,
-                "raw_high": adjusted + 1.0,
-                "raw_low": adjusted - 1.0,
-                "raw_close": adjusted,
-                "volume": pd.DataFrame(
-                    {"V": [1_000_000, 1_100_000], "MA": [900_000, 950_000]},
-                    index=dates,
-                ),
-            }
-            for name, frame in market_frames.items():
-                frame.to_csv(data / f"{name}.csv")
-            price_hash = hashlib.sha256(
-                (data / "adjusted_close.csv").read_bytes()
-            ).hexdigest()
-            (data / "download_manifest.json").write_text(
-                json.dumps(
-                    {
-                        "latest_date": "2026-11-16",
-                        "file_sha256": {"adjusted_close.csv": price_hash},
-                    }
-                ),
-                encoding="utf-8",
-            )
-
-            protocol, protocol_sha = audit._protocol({"V/MA": report})
             entry = self._row()
             entry.update(
                 {
@@ -168,6 +171,54 @@ class ForwardAuditTests(unittest.TestCase):
                 len(rerun.loc[rerun["record_type"] == "resolution"]), 1
             )
             self.assertTrue(audit.verify_chain(rerun))
+
+    def test_exit_is_not_resolved_and_reversal_resolves_once(self):
+        for event, side, state, expected_resolutions in (
+            ("EXIT", 0, "flat", 0),
+            ("REVERSAL", -1, "short_first_long_second", 1),
+        ):
+            with self.subTest(event=event), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                results, data, _, protocol_sha, price_hash = (
+                    self._write_lifecycle_fixture(root, signal_sides=(side, side))
+                )
+                observation = self._row()
+                observation.update(
+                    {
+                        "record_key": f"observation|V/MA|2026-11-13|{event}",
+                        "observed_on": "2026-11-15",
+                        "data_through": "2026-11-13",
+                        "protocol_sha256": protocol_sha,
+                        "source_sha256": price_hash,
+                        "signal_date": "2026-11-13",
+                        "signal_event": event,
+                        "signal_side": side,
+                        "signal_state": state,
+                        "execution_status": (
+                            "pending_next_session_close_audit"
+                            if event == "REVERSAL"
+                            else "not_applicable"
+                        ),
+                    }
+                )
+                ledger = audit.append_rows(pd.DataFrame(), [observation])
+                records, _, _ = audit.build_records(
+                    results, data, ledger, "2026-11-17"
+                )
+                updated = audit.append_rows(ledger, records)
+                resolutions = updated.loc[updated["record_type"] == "resolution"]
+                self.assertEqual(len(resolutions), expected_resolutions)
+                self.assertTrue(audit.verify_chain(updated))
+
+                rerun_records, _, _ = audit.build_records(
+                    results, data, updated, "2026-11-18"
+                )
+                rerun = audit.append_rows(updated, rerun_records)
+                self.assertEqual(
+                    len(rerun.loc[rerun["record_type"] == "resolution"]),
+                    expected_resolutions,
+                )
+                self.assertTrue(audit.verify_chain(rerun))
 
 
 if __name__ == "__main__":
