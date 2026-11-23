@@ -22,6 +22,24 @@
 
 # Changelog
 
+## v0.10 · 22 November 2026
+
+- Extended the unchanged frozen-pair holdout through 20 November; five new
+  sessions produced no entry and all three prospective states remained flat.
+- Continued the aggregate and hash-chained forward ledgers without revising the
+  fixed pair list, thresholds, execution assumptions, costs, or borrow scenario.
+- Added event-policy lifecycle coverage: EXIT records never create a modeled
+  execution resolution, while REVERSAL records resolve once and remain idempotent.
+- Independently re-audited the newer PAIR//LAB daily discovery snapshot: 227 pairs
+  enumerated, 164 cointegration tests, 12 archived deep reviews, and zero qualified
+  candidates through 20 November.
+- Confirmed recent daily discovery workflows and Pages deployments are succeeding;
+  no fabricated scanner result or active trade alert was found.
+- Reproduced six aggregate/bootstrap outputs byte-for-byte in a second 50,000-path
+  run; 43 Python tests and all dashboard/site smoke audits pass.
+- Preserved the assumption-driven simulator and contribution-aware historical ETF
+  dashboard unchanged and separate from both empirical research layers.
+
 ## v0.9 · 15 November 2026
 
 - Extended the unchanged frozen-pair holdout through 13 November; five new

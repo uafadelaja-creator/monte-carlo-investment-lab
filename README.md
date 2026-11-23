@@ -23,9 +23,9 @@ live in `assets/`. All displayed metrics, normalized historical chart series,
 and simulated percentile curves come from `results/historical_dashboard_data.json`.
 
 
-## Current research release: v0.9 · 15 November 2026
+## Current research release: v0.10 · 22 November 2026
 
-The repository now keeps three layers deliberately separate:
+The repository now keeps four layers deliberately separate:
 
 1. **Illustrative assumptions:** `simulate.py` uses declared Student-t return,
    volatility, and correlation assumptions. It is not historical evidence.
@@ -34,8 +34,11 @@ The repository now keeps three layers deliberately separate:
 3. **Statistical-arbitrage prototype:** `pairs_research.py` tests three predeclared
    same-industry pair hypotheses with delayed fills, modeled costs, and a holdout.
    It is not a signal service and has not established profitable alpha.
+4. **PAIR//LAB discovery:** `daily_pair_scanner.py` surveys a broader same-industry
+   universe and archives two rotating deep reviews per run. It is exploratory
+   hypothesis generation, not a source of retrospective changes to layer 3.
 
-Version 0.9 preserves the third layer's frozen protocol, continues sequential
+Version 0.10 preserves the third layer's frozen protocol, continues sequential
 monitoring and the prospective audit, and hardens reproducibility:
 
 - Fixed hypotheses: V/MA, KO/PEP, and XOM/CVX; no winner is selected ex post.
@@ -60,31 +63,34 @@ monitoring and the prospective audit, and hardens reproducibility:
   borrow inventory remain explicitly unobserved.
 - An end-to-end synthetic lifecycle test proving that a frozen entry resolves on
   the next completed session exactly once, including across repeated runs.
-- The separate PAIR//LAB provisional 18-pair screen passes its site, plan, chart,
-  and TradingView data-separation audits. It remains hypothesis generation and
-  does not alter the frozen three-pair protocol or its conclusions.
+- Forward-audit tests now verify event policy explicitly: an EXIT does not create
+  a next-session execution resolution, while a REVERSAL resolves exactly once.
+- The separate PAIR//LAB discovery run through 20 November enumerated 227 pairs,
+  tested 164 for cointegration, and produced zero FDR-qualified candidates. Its
+  independent input/model audit passes and does not alter the frozen protocol.
 
 ### Current fixed holdout result
 
-The frozen protocol was refreshed on 2,985 adjusted daily observations through
-13 November 2026, with a 3 January 2023 holdout start. It still produced only three
+The frozen protocol was refreshed on 2,990 adjusted daily observations through
+20 November 2026, with a 3 January 2023 holdout start. It still produced only three
 entries across all pairs: V/MA netted −0.005%, KO/PEP stayed flat, and XOM/CVX
 netted −2.29%. Exposure ranged from 0% to 2.1% of sessions.
 
-Across 50,000 moving-block paths, the 36-month loss frequency was 45.19% for
-V/MA (finite-path 95% interval 44.76%–45.63%) and 79.52% for XOM/CVX
-(79.17%–79.88%). KO/PEP's 0% frequency reflects no trades, not a successful
+Across 50,000 moving-block paths, the 36-month loss frequency was 45.01% for
+V/MA (finite-path 95% interval 44.58%–45.45%) and 79.43% for XOM/CVX
+(79.08%–79.78%). KO/PEP's 0% frequency reflects no trades, not a successful
 strategy. These intervals quantify Monte Carlo sampling error only.
 
-The five new sessions generated no entry. All three pairs remained flat in the
-prospective audit, leaving no pending next-session execution audit. The adjusted-
-price prefix hash changed, so small result drift combines new sessions with upstream
-vendor revision risk.
+The five new sessions generated no entry. XOM/CVX finished at Z = −1.95 with a
+0.011 trailing cointegration p-value, close to but still inside the frozen ±2.0
+entry threshold. All three pairs therefore remained flat with no pending execution
+audit. The adjusted-price prefix hash changed, so small result drift combines new
+sessions with upstream vendor revision risk.
 
 Cost and formation-window sensitivity changed outcomes materially. Descriptive
 Fama-French alpha estimates were not statistically persuasive and are not proof
 of implementable alpha. The current result is therefore **no demonstrated
-statistical-arbitrage edge**. See `RUN_2026-11-15.md`,
+statistical-arbitrage edge**. See `RUN_2026-11-22.md`,
 `results/stat_arb_current/FORWARD_SIGNAL_AUDIT.md`, and `STAT_ARB_GUIDE.md`.
 
 ## Historical data refresh · 7 November 2026
@@ -237,7 +243,8 @@ The historical engine resamples contiguous three-month blocks of **joint** ARKK/
 - `results/historical_metadata.json`: includes the original input hash and source window.
 - `RUN_2026-10-11.md`: archived initial historical research report.
 - `RUN_2026-11-08.md`: prior frozen stat-arb refresh and validation report.
-- `RUN_2026-11-15.md`: current frozen stat-arb refresh and validation report.
+- `RUN_2026-11-15.md`: prior frozen stat-arb refresh and validation report.
+- `RUN_2026-11-22.md`: latest frozen stat-arb and discovery-system validation report.
 - `render_historical_results.py`: regenerate both pages from aggregate JSON and shared layout.
 - `CHANGELOG.md`: version history and methodological upgrades.
 - `STAT_ARB_GUIDE.md`: frozen pair protocol, data caveats, and roadmap.
