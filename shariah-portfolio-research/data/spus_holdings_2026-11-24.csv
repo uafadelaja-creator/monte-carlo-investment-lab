@@ -1,0 +1,21 @@
+ticker,company,sector,issuer_weight_pct,as_of,evidence_type,source_name,source_url
+AAPL,Apple Inc,Information Technology,14.18,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+NVDA,NVIDIA Corp,Information Technology,11.12,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+MSFT,Microsoft Corp,Information Technology,10.18,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+GOOGL,Alphabet Inc,Communication Services,4.61,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+AVGO,Broadcom Inc,Information Technology,4.15,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+LLY,Eli Lilly & Co,Health Care,3.04,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+TSLA,Tesla Inc,Consumer Discretionary,3.02,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+MU,Micron Technology Inc,Information Technology,2.23,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+AMD,Advanced Micro Devices Inc,Information Technology,2.06,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+JNJ,Johnson & Johnson,Health Care,1.80,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+XOM,ExxonMobil Holdings Corp,Energy,1.80,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+ABBV,AbbVie Inc,Health Care,1.42,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+PG,Procter & Gamble Co,Consumer Staples,1.10,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+CSCO,Cisco Systems Inc,Information Technology,1.06,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+HD,Home Depot Inc,Consumer Discretionary,0.96,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+MRK,Merck & Co Inc,Health Care,0.93,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+PANW,Palo Alto Networks Inc,Information Technology,0.80,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+AMAT,Applied Materials Inc,Information Technology,0.77,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+TXN,Texas Instruments Inc,Information Technology,0.74,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
+LRCX,Lam Research Corp,Information Technology,0.73,2026-11-24,ETF_HOLDING,SP Funds SPUS holdings,https://www.sp-funds.com/SPUS/
