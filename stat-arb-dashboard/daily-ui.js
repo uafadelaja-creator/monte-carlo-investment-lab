@@ -139,10 +139,14 @@ function reviewCard(r) {
   }
   card.append(facts);
 
+  const spread = el("div", "replay");
+  spread.append(el("strong", "", "Modeled spread over time"));
+  spread.append(chart(r.z_history));
+  spread.append(el("p", "muted", "Historical daily spread shown as a Z-score."));
+  card.append(spread);
+
   const past=el("details");
-  past.append(el("summary","","See a chart and historical examples"));
-  past.append(el("p","","Historical modeled gap. This is not a live price chart or a signal to trade."));
-  past.append(chart(r.z_history));
+  past.append(el("summary","","See historical paper examples"));
   const rep=r.retrospective_replay||{};
   const replay=el("div","replay");
   replay.append(el("strong","","Past paper examples — not real trades"));
@@ -204,12 +208,56 @@ function historyRows() {
     const last=el("td");last.append(btn);tr.append(last);body.append(tr);
   }
 }
+const WATCH_KEY = "pairlab.watchlist";
+const SCAN_KEY = "pairlab.scan-comparison";
+function readSaved(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+  catch { return fallback; }
+}
+function writeSaved(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch { return false; }
+}
+const watchlist = new Set(readSaved(WATCH_KEY, []));
+let previousScan = null;
+function rememberVerifiedScan(current) {
+  const saved = readSaved(SCAN_KEY, {});
+  if (saved.latest?.date > current.as_of) {
+    previousScan = null;
+    return;
+  }
+  const sameSession = saved.latest?.date === current.as_of;
+  previousScan = (sameSession ? saved.previous : saved.latest) ?? null;
+  const pairs = Object.fromEntries(current.pairs.map(p => [p.pair, {
+    status: p.status, deviation: p.gates?.deviation
+  }]));
+  writeSaved(SCAN_KEY, { latest: { date: current.as_of, pairs }, previous: previousScan });
+}
+function pairChanges(pair) {
+  if (!previousScan) return [];
+  const before = previousScan.pairs[pair.pair];
+  if (!before) return ["Added to the scanner"];
+  const changes = [];
+  if (before.status !== pair.status) {
+    changes.push("Previously: " + (STATUS_LABELS[before.status] ?? before.status));
+  }
+  const deviation = pair.gates?.deviation;
+  if (typeof deviation === "boolean" && typeof before.deviation === "boolean" && before.deviation !== deviation) {
+    changes.push(deviation ? "Spread crossed the scanner threshold" : "Spread fell below the scanner threshold");
+  }
+  return changes;
+}
 function scanRows() {
   const body=$("scan-rows");body.replaceChildren();
+  $("comparison-date").textContent = !scan ? "" : previousScan
+    ? "Comparing with the last earlier session verified in this browser: " + shortDate(previousScan.date)
+    : "Changes will appear after this browser verifies another market session.";
   if(!scan?.pairs)return;
   const term=$("scan-search").value.trim().toUpperCase(),status=$("scan-filter").value;
   const visible=scan.pairs.filter(r=>(status==="all"||r.status===status)&&
-      (r.pair+" "+r.industry).toUpperCase().includes(term));
+      (r.pair+" "+r.industry).toUpperCase().includes(term) &&
+      (!$("watch-only").checked || watchlist.has(r.pair)) &&
+      (!$("changes-only").checked || pairChanges(r).length > 0));
   $("scan-count").textContent=visible.length+" / "+scan.pairs.length+" pairs shown";
   $("scan-empty").hidden=visible.length>0;
   for(const p of visible){
@@ -229,7 +277,33 @@ function scanRows() {
         " · Many-tests q-value: "+number(p.q,4)+
         ". These are historical statistics, not the probability of a profitable trade."));
     }
-    info.append(details);tr.append(info);body.append(tr);
+    for (const change of pairChanges(p)) result.append(el("p", "muted", change));
+    const review = journal?.records?.filter(r => r.pair === p.pair).sort((a,b) => b.review_date.localeCompare(a.review_date))[0];
+    if (review) {
+      const open = el("button", "", "Open review · " + shortDate(review.review_date));
+      open.addEventListener("click", () => {
+        activate("history");
+        $("history-day").value = review.review_date;
+        $("history-search").value = review.pair;
+        historyRows();
+        $("archive-detail").replaceChildren(reviewCard(review));
+        $("archive-detail").scrollIntoView({ block: "nearest" });
+      });
+      details.append(open);
+    }
+    const cell = el("td");
+    const button = el("button", "", watchlist.has(p.pair) ? "Saved" : "Save");
+    button.setAttribute("aria-label", "Save " + p.pair + " to watchlist");
+    button.setAttribute("aria-pressed", String(watchlist.has(p.pair)));
+    button.addEventListener("click", () => {
+      if (watchlist.has(p.pair)) watchlist.delete(p.pair);
+      else watchlist.add(p.pair);
+      const persisted = writeSaved(WATCH_KEY, [...watchlist]);
+      scanRows();
+      if (!persisted) $("comparison-date").textContent += " Watchlist storage is unavailable.";
+    });
+    cell.append(button);
+    info.append(details);tr.append(info, cell);body.append(tr);
   }
 }
 function drawSummary() {
@@ -297,6 +371,7 @@ async function loadData(){
     if(report.input_prices_sha256!==freshScan.input_provenance?.sha256_uncompressed_csv)
       throw Error("Source price checkpoint does not match the audit");
     scan=freshScan;journal=freshJournal;
+    rememberVerifiedScan(scan);
     const provenance=scan.input_provenance;
     if(/^stat-arb-dashboard\/data\/source-snapshots\/[0-9-]+-[a-f0-9]+\.csv\.gz$/.test(provenance.path)){
       $("source-link").href="https://github.com/uafadelaja-creator/monte-carlo-investment-lab/blob/main/"+provenance.path;
@@ -367,6 +442,8 @@ function init(){
   $("history-day").addEventListener("change",historyRows);
   $("scan-search").addEventListener("input",scanRows);
   $("scan-filter").addEventListener("change",scanRows);
+  $("watch-only").addEventListener("change", scanRows);
+  $("changes-only").addEventListener("change", scanRows);
   activate("latest");
   loadData().catch(err=>{$("last-run").textContent="Data request failed: "+err.message;$("last-run").classList.add("error");});
   loadRunStatus();
